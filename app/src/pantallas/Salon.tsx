@@ -122,7 +122,7 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
                 aria-label={`Mesa ${m.nombre}, ${o ? `ocupada, ${o.comensales} comensales, ${minutosDesde(o.abierta_en)} minutos` : `libre, ${m.lugares} lugares`}`}>
                 <span className="dib">
                   <MesaDibujo forma={m.forma} lugares={m.lugares} ocupadas={o ? Math.min(o.comensales, m.lugares) : 0} />
-                  <span className="num" translate="no">{m.nombre}</span>
+                  <span className="num-mesa" translate="no">{m.nombre}</span>
                 </span>
                 <span className="pie">
                   <b>{o ? "Ocupada" : "Libre"}</b>

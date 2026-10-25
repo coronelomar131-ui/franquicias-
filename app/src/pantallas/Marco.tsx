@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useSesion } from "../estado/sesion";
 import type { Ruta } from "../lib/ruta";
-import { aplicarMarca } from "../lib/marca";
+import { aplicarMarca, hexFondo } from "../lib/marca";
 import { Icono, type NombreIcono } from "../componentes/Icono";
 
 const PESTANAS: { id: Ruta; texto: string; icono: NombreIcono }[] = [
@@ -18,13 +18,13 @@ export function Marco({ ruta, ir, children }: { ruta: Ruta; ir: (r: Ruta) => voi
   const principal = useRef<HTMLElement>(null);
   const primera = useRef(true);
 
-  useEffect(() => { aplicarMarca(actual?.color_marca); }, [actual?.color_marca]);
+  useEffect(() => { aplicarMarca(actual); }, [actual]);
   useEffect(() => {
     const cocina = ruta === "cocina";
     document.documentElement.dataset.tema = cocina ? "cocina" : "";
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", cocina ? "#1f2227" : "#f4efe6");
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", cocina ? "#1f2227" : hexFondo(actual?.fondo));
     return () => { document.documentElement.dataset.tema = ""; };
-  }, [ruta]);
+  }, [ruta]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (primera.current) { primera.current = false; return; }
     window.scrollTo(0, 0);
@@ -43,7 +43,7 @@ export function Marco({ ruta, ir, children }: { ruta: Ruta; ir: (r: Ruta) => voi
               <option value="+">+ Otro restaurante</option>
             </select>
           </label>
-        ) : <span className="cab-nombre" translate="no">{actual?.nombre}</span>}
+        ) : <span className="cab-nombre" translate="no">{actual?.nombre}{actual?.eslogan && <small>{actual.eslogan}</small>}</span>}
         <button className="cab-salir" type="button" onClick={salir} aria-label="Cerrar sesión"><Icono n="salir" tam={20} /></button>
       </header>
       <main ref={principal} key={ruta} className="vista entra">{children}</main>

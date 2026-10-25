@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { supabase } from "../lib/supabase";
 import { useSesion } from "../estado/sesion";
-import { COLORES, aplicarMarca } from "../lib/marca";
+import { COLORES, FONDOS, TIPOGRAFIAS, aplicarMarca, type Marca } from "../lib/marca";
 import { borrarImagen, subirImagen } from "../lib/imagen";
 import { mensajeError } from "../lib/formato";
-import type { ColorMarca } from "../lib/tipos";
+import type { ColorMarca, Fondo, Tipografia } from "../lib/tipos";
 import { useAviso } from "../componentes/Aviso";
 import { Icono } from "../componentes/Icono";
 
@@ -12,20 +12,25 @@ export function Negocio({ rid }: { rid: string }) {
   const { actual, recargar } = useSesion();
   const avisar = useAviso();
   const [nombre, setNombre] = useState(actual?.nombre ?? "");
+  const [eslogan, setEslogan] = useState(actual?.eslogan ?? "");
   const [color, setColor] = useState<ColorMarca>(actual?.color_marca ?? "achiote");
+  const [letra, setLetra] = useState<Tipografia>(actual?.tipografia ?? "fonda");
+  const [fondo, setFondo] = useState<Fondo>(actual?.fondo ?? "crema");
   const [subiendo, setSubiendo] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const archivo = useRef<HTMLInputElement>(null);
   const logo = actual?.logo_url ?? null;
-  // Si se sale sin guardar, regresa al color guardado
-  const guardado = useRef(actual?.color_marca);
-  guardado.current = actual?.color_marca;
+  // Si se sale sin guardar, regresa a lo guardado
+  const guardado = useRef<Marca | null | undefined>(actual);
+  guardado.current = actual;
+  // Lo que se elige se ve al instante en toda la app
+  useEffect(() => { aplicarMarca({ color_marca: color, tipografia: letra, fondo }); }, [color, letra, fondo]);
   useEffect(() => () => aplicarMarca(guardado.current), []);
 
   async function guardar(e: FormEvent) {
     e.preventDefault();
     setGuardando(true);
-    const { error } = await supabase.from("restaurantes").update({ nombre: nombre.trim(), color_marca: color }).eq("id", rid);
+    const { error } = await supabase.from("restaurantes").update({ nombre: nombre.trim(), eslogan: eslogan.trim(), color_marca: color, tipografia: letra, fondo }).eq("id", rid);
     setGuardando(false);
     if (error) { avisar(mensajeError(error), "error"); return; }
     await recargar().catch(() => {});
@@ -50,13 +55,12 @@ export function Negocio({ rid }: { rid: string }) {
     await borrarImagen(logo).catch(() => {});
     await recargar().catch(() => {});
   }
-  const elegirColor = (c: ColorMarca) => { setColor(c); aplicarMarca(c); };
 
   return (
     <div className="negocio">
       <div className="encabezado">
         <h1 className="titulo" tabIndex={-1}>Mi negocio</h1>
-        <p className="sub">Tu nombre, tu logo y tu color aparecen en toda la app y en los tickets.</p>
+        <p className="sub">Tu logo, tu color, tu letra y tu papel. Todo cambia al momento para que veas cómo queda antes de guardar.</p>
       </div>
 
       <div className="negocio-cuerpo">
@@ -79,13 +83,41 @@ export function Negocio({ rid }: { rid: string }) {
             <input className="entrada" maxLength={80} required value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="organization" name="restaurante" />
           </label>
 
+          <label className="campo"><span>Frase debajo del nombre (opcional)</span>
+            <input className="entrada" maxLength={80} value={eslogan} onChange={(e) => setEslogan(e.target.value)} autoComplete="off" name="eslogan" placeholder="Desde 1987 en la colonia Roma" />
+          </label>
+
           <fieldset className="campo colores">
             <legend>Color de tu marca</legend>
             <div className="muestras" role="radiogroup" aria-label="Color de tu marca">
               {COLORES.map((c) => (
-                <button key={c.id} type="button" role="radio" aria-checked={color === c.id} className="muestra" onClick={() => elegirColor(c.id)} style={{ ["--c" as string]: c.color }}>
+                <button key={c.id} type="button" role="radio" aria-checked={color === c.id} className="muestra" onClick={() => setColor(c.id)} style={{ ["--c" as string]: c.color }}>
                   <i aria-hidden="true">{color === c.id && <Icono n="ok" tam={18} />}</i>
                   <span>{c.nombre}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="campo colores">
+            <legend>Letra</legend>
+            <div className="letras" role="radiogroup" aria-label="Letra">
+              {TIPOGRAFIAS.map((t) => (
+                <button key={t.id} type="button" role="radio" aria-checked={letra === t.id} className="letra" onClick={() => setLetra(t.id)} onPointerEnter={() => { t.cargar().catch(() => {}); }}>
+                  <b style={{ fontFamily: t.familia }} translate="no">{nombre.trim() || "Tu restaurante"}</b>
+                  <span>{t.nombre} · {t.para}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="campo colores">
+            <legend>Papel</legend>
+            <div className="muestras" role="radiogroup" aria-label="Papel">
+              {FONDOS.map((f) => (
+                <button key={f.id} type="button" role="radio" aria-checked={fondo === f.id} className="muestra papel" onClick={() => setFondo(f.id)} style={{ ["--c" as string]: f.muestra }}>
+                  <i aria-hidden="true">{fondo === f.id && <Icono n="ok" tam={18} />}</i>
+                  <span>{f.nombre}</span>
                 </button>
               ))}
             </div>
@@ -99,7 +131,7 @@ export function Negocio({ rid }: { rid: string }) {
           <div className="papel-previa">
             <div className="previa-cab">
               {logo ? <img src={logo} alt="" /> : <span className="previa-ini">{(nombre.trim() || "R").charAt(0).toUpperCase()}</span>}
-              <b translate="no">{nombre.trim() || "Tu restaurante"}</b>
+              <div className="previa-nom"><b translate="no">{nombre.trim() || "Tu restaurante"}</b>{eslogan.trim() && <small>{eslogan.trim()}</small>}</div>
             </div>
             <div className="previa-linea"><span>2 × Tacos al pastor</span><span>$190</span></div>
             <div className="previa-linea"><span>1 × Agua de horchata</span><span>$45</span></div>

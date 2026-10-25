@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { conTeclado } from "../lib/dispositivo";
+import { useSesion } from "../estado/sesion";
 import { supabase } from "../lib/supabase";
 import type { Categoria, Producto } from "../lib/tipos";
 import { aCentavos, mensajeError, pesos } from "../lib/formato";
@@ -10,6 +12,7 @@ import { Icono } from "../componentes/Icono";
 type Edicion = { tipo: "producto"; id: string | "nuevo"; categoria: string | null } | { tipo: "categoria"; id: string | "nueva" } | null;
 
 export function Menu({ rid }: { rid: string }) {
+  const { actual } = useSesion();
   const avisar = useAviso();
   const [cats, setCats] = useState<Categoria[] | null>(null);
   const [prods, setProds] = useState<Producto[]>([]);
@@ -75,6 +78,13 @@ export function Menu({ rid }: { rid: string }) {
       )}
 
       <div className="carta">
+        {actual && secciones.length > 0 && (
+          <div className="membrete" aria-hidden="true">
+            {actual.logo_url && <img src={actual.logo_url} alt="" />}
+            <strong translate="no">{actual.nombre}</strong>
+            {actual.eslogan && <span>{actual.eslogan}</span>}
+          </div>
+        )}
         {secciones.map(({ cat, items }, si) => {
           const editandoCat = cat && edicion?.tipo === "categoria" && edicion.id === cat.id;
           return (
@@ -163,7 +173,7 @@ function FormaCategoria({ inicial, onGuardar, onCancelar, extra }: { inicial: st
   return (
     <form className="editor entra" onSubmit={enviar}>
       <label className="campo"><span>Nombre de la categoría</span>
-        <input className="entrada" autoFocus maxLength={40} required value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tacos, Bebidas, Postres…" autoComplete="off" name="categoria" />
+        <input className="entrada" autoFocus={conTeclado} maxLength={40} required value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tacos, Bebidas, Postres…" autoComplete="off" name="categoria" />
       </label>
       <div className="editor-acc">
         <button className="primario" type="submit" disabled={enviando || !nombre.trim()}>{enviando ? "Guardando…" : "Guardar"}</button>
@@ -226,7 +236,7 @@ function FormaProducto({ rid, cats, inicial, onGuardar, onCancelar, onBorrar, on
       </div>
       <div className="editor-fila">
         <label className="campo crece"><span>Platillo</span>
-          <input className="entrada" autoFocus maxLength={80} required value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tacos al pastor" autoComplete="off" name="platillo" />
+          <input className="entrada" autoFocus={conTeclado} maxLength={80} required value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tacos al pastor" autoComplete="off" name="platillo" />
         </label>
         <label className="campo precio"><span>Precio</span>
           <input className="entrada num" inputMode="decimal" required value={precio} onChange={(e) => setPrecio(e.target.value)} placeholder="95" autoComplete="off" name="precio" />
