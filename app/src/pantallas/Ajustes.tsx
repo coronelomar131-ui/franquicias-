@@ -14,7 +14,7 @@ const PARTES: { id: Parte; titulo: string; icono: NombreIcono }[] = [
   { id: "negocio", titulo: "Mi negocio", icono: "tienda" },
   { id: "mesas", titulo: "Mesas", icono: "mesa" },
   { id: "equipo", titulo: "Equipo", icono: "equipo" },
-  { id: "modo", titulo: "Modo equipo", icono: "candado" },
+  { id: "modo", titulo: "Acceso del equipo", icono: "candado" },
 ];
 
 export function Ajustes({ rid, parte, ir }: { rid: string; parte: string | null; ir: (r: Ruta, param?: string) => void }) {
@@ -50,7 +50,7 @@ function Indice({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) => voi
     negocio: `${actual?.logo_url ? "Con logo" : "Sin logo"} · ${color} · Letra ${letra}`,
     mesas: cuentas ? (cuentas.mesas ? `${cuentas.mesas} ${cuentas.mesas === 1 ? "mesa" : "mesas"} en el salón` : "Todavía no hay mesas") : " ",
     equipo: cuentas ? (cuentas.equipo ? `${cuentas.equipo} ${cuentas.equipo === 1 ? "persona" : "personas"} con PIN` : "Nadie dado de alta") : " ",
-    modo: "Que tus meseros entren con su PIN en esta tableta",
+    modo: actual?.codigo_equipo ? `Código ${actual.codigo_equipo} · cada quien entra con su PIN` : "Cómo entra tu equipo con su PIN",
   };
 
   return (
