@@ -26,7 +26,7 @@ export function Equipo({ rid }: { rid: string }) {
   }
   useEffect(() => { cargar().catch((e) => { setGente([]); avisar(mensajeError(e), "error"); }); }, [rid]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (gente === null) return <div className="equipo"><h1 className="titulo" tabIndex={-1}>Equipo</h1><p className="sub">Cargando…</p></div>;
+  if (gente === null) return <div className="equipo"><h1 className="titulo" tabIndex={-1}>Equipo</h1><p className="sub espera">Cargando…</p></div>;
   const actual = gente.find((g) => g.id === sel);
 
   return (

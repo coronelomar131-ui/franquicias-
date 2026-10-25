@@ -85,7 +85,7 @@ export function Pedido({ rid, ordenId, ir }: { rid: string; ordenId: string; ir:
     return () => { vivo = false; supabase.removeChannel(canal); };
   }, [ordenId, rid, cargarCuenta, avisar]);
 
-  if (cargando) return <div className="pedido"><p className="sub" style={{ padding: "24px var(--m)" }}>Abriendo la mesa…</p></div>;
+  if (cargando) return <div className="pedido"><p className="sub espera" style={{ padding: "24px var(--m)" }}>Abriendo la mesa…</p></div>;
   if (!orden) return (
     <div className="pedido"><div className="encabezado"><h1 className="titulo" tabIndex={-1}>Mesa no encontrada</h1>
       <button className="secundario" type="button" onClick={() => ir("salon")}>Volver al salón</button></div></div>

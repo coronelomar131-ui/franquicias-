@@ -130,7 +130,7 @@ html[data-letra="cantina"] .titulo { font-weight: 700; letter-spacing: 0; }
 /* ── Entradas a escena ──────────────────── */
 .entra { animation: entra 240ms var(--ease-out) both; }
 @keyframes entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.escalon > * { animation: entra 420ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 50ms); }
+.escalon > * { animation: entra 320ms var(--ease-out) both; animation-delay: calc(min(var(--i, 0), 10) * 40ms); }
 
 @media (prefers-reduced-motion: reduce) {
   .entra, .escalon > * { animation-name: aparece; }

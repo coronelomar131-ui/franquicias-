@@ -1,5 +1,7 @@
 const TRAZOS = {
   atras: "M15 18l-6-6 6-6",
+  adelante: "M9 6l6 6-6 6",
+  tienda: "M4 10l1.5-5h13L20 10M4 10h16M5 10v10h14V10M10 20v-5h4v5",
   mas: "M12 5v14M5 12h14",
   menos: "M5 12h14",
   ok: "M5 12.5l4.5 4.5L19 7.5",
