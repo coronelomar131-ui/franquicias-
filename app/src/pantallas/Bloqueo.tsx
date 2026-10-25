@@ -6,6 +6,7 @@ import type { Empleado } from "../lib/tipos";
 import { mensajeError } from "../lib/formato";
 import { useAviso } from "../componentes/Aviso";
 import { Icono } from "../componentes/Icono";
+import { Cara } from "../componentes/Cara";
 
 const PUESTO: Record<Empleado["rol"], string> = { mesero: "Mesero", cocina: "Cocina", caja: "Caja", gerente: "Gerente" };
 const TECLAS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
@@ -19,7 +20,7 @@ export function Bloqueo({ rid }: { rid: string }) {
   const [dueno, setDueno] = useState(false);
 
   useEffect(() => {
-    supabase.from("empleados").select("id, restaurante_id, nombre, rol, activo").eq("restaurante_id", rid).eq("activo", true).order("nombre")
+    supabase.from("empleados").select("id, restaurante_id, nombre, rol, activo, foto_url").eq("restaurante_id", rid).eq("activo", true).order("nombre")
       .then(({ data, error }) => { if (error) { avisar(mensajeError(error), "error"); setGente([]); } else setGente((data ?? []) as Empleado[]); });
   }, [rid, avisar]);
 
@@ -43,7 +44,7 @@ export function Bloqueo({ rid }: { rid: string }) {
                 {gente.map((g, i) => (
                   <li key={g.id} style={{ ["--i" as string]: i }}>
                     <button type="button" className="cara" onClick={() => setQuien(g)}>
-                      <span className="cara-ini" aria-hidden="true">{g.nombre.trim().charAt(0).toUpperCase()}</span>
+                      <Cara nombre={g.nombre} foto={g.foto_url} />
                       <b>{g.nombre}</b>
                       <small>{PUESTO[g.rol]}</small>
                     </button>
@@ -110,6 +111,7 @@ function Teclado({ rid, persona, onVolver }: { rid: string; persona: Empleado; o
   return (
     <section className="teclado entra" ref={caja} aria-labelledby="pin-t">
       <button type="button" className="vuelta" onClick={onVolver}><Icono n="atras" tam={20} />Cambiar</button>
+      <Cara nombre={persona.nombre} foto={persona.foto_url} className="cara-ini grande" />
       <h1 id="pin-t" className="teclado-nom" tabIndex={-1}>{persona.nombre}</h1>
       <p className="sub">Pon tu PIN</p>
       <div key={sacude} className={"pin-puntos" + (sacude ? " sacude" : "")} role="img" aria-label={`${pin.length} de ${puntos} números`}>

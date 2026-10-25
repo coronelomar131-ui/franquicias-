@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { conTeclado } from "../lib/dispositivo";
 import { supabase } from "../lib/supabase";
 import type { Empleado, Rol } from "../lib/tipos";
@@ -6,6 +6,8 @@ import { mensajeError } from "../lib/formato";
 import { useAviso } from "../componentes/Aviso";
 import { Segmento } from "../componentes/Controles";
 import { Icono } from "../componentes/Icono";
+import { Cara } from "../componentes/Cara";
+import { borrarImagen, subirImagen } from "../lib/imagen";
 
 const ROLES: { id: Rol; texto: string; que: string }[] = [
   { id: "mesero", texto: "Mesero", que: "Abre mesas y toma pedidos" },
@@ -20,7 +22,7 @@ export function Equipo({ rid }: { rid: string }) {
   const [sel, setSel] = useState<string | "nuevo" | null>(null);
 
   async function cargar() {
-    const { data, error } = await supabase.from("empleados").select("id, restaurante_id, nombre, rol, activo").eq("restaurante_id", rid).order("creado_en");
+    const { data, error } = await supabase.from("empleados").select("id, restaurante_id, nombre, rol, activo, foto_url").eq("restaurante_id", rid).order("creado_en");
     if (error) throw error;
     setGente((data ?? []) as Empleado[]);
   }
@@ -39,7 +41,7 @@ export function Equipo({ rid }: { rid: string }) {
         {gente.map((g, i) => (
           <li key={g.id} style={{ ["--i" as string]: i }}>
             <button type="button" className={"gafete" + (g.activo ? "" : " apagado")} aria-pressed={sel === g.id} onClick={() => setSel(sel === g.id ? null : g.id)} aria-label={`Editar a ${g.nombre}, ${g.rol}${g.activo ? "" : ", desactivado"}`}>
-              <span className="gafete-ini" aria-hidden="true">{g.nombre.trim().charAt(0).toUpperCase()}</span>
+              <Cara nombre={g.nombre} foto={g.foto_url} className="gafete-ini" />
               <span className="gafete-nom">{g.nombre}</span>
               <span className={"gafete-rol " + g.rol}>{ROLES.find((r) => r.id === g.rol)?.texto}</span>
               {!g.activo && <span className="sello-mini">Baja</span>}
@@ -55,8 +57,17 @@ export function Equipo({ rid }: { rid: string }) {
       </ul>
       {(sel === "nuevo" || actual) && (
         <EditorEmpleado key={sel} inicial={actual} onCancelar={() => setSel(null)} onGuardar={async (v) => {
-          const { error } = await supabase.rpc("guardar_empleado", { p_restaurante: rid, p_id: actual?.id ?? null, p_nombre: v.nombre, p_rol: v.rol, p_pin: v.pin || null, p_activo: v.activo });
+          const { data: id, error } = await supabase.rpc("guardar_empleado", { p_restaurante: rid, p_id: actual?.id ?? null, p_nombre: v.nombre, p_rol: v.rol, p_pin: v.pin || null, p_activo: v.activo });
           if (error) { avisar(mensajeError(error), "error"); return; }
+          // La foto va después: para una persona nueva hace falta su id
+          if (v.foto !== undefined) {
+            try {
+              const url = v.foto ? await subirImagen(rid, "equipo", v.foto) : null;
+              const { error: e2 } = await supabase.from("empleados").update({ foto_url: url }).eq("id", id as string);
+              if (e2) throw e2;
+              await borrarImagen(actual?.foto_url).catch(() => {});
+            } catch (e) { avisar(`${v.nombre} se guardó, pero la foto no: ${mensajeError(e)}`, "error"); }
+          }
           await cargar().catch(() => {});
           avisar(actual ? `${v.nombre} guardado` : `${v.nombre} agregado al equipo`);
           setSel(null);
@@ -66,23 +77,41 @@ export function Equipo({ rid }: { rid: string }) {
   );
 }
 
-function EditorEmpleado({ inicial, onGuardar, onCancelar }: { inicial?: Empleado; onGuardar: (v: { nombre: string; rol: Rol; pin: string; activo: boolean }) => Promise<void>; onCancelar: () => void }) {
+function EditorEmpleado({ inicial, onGuardar, onCancelar }: { inicial?: Empleado; onGuardar: (v: { nombre: string; rol: Rol; pin: string; activo: boolean; foto?: File | null }) => Promise<void>; onCancelar: () => void }) {
   const [nombre, setNombre] = useState(inicial?.nombre ?? "");
   const [rol, setRol] = useState<Rol>(inicial?.rol ?? "mesero");
   const [pin, setPin] = useState("");
   const [activo, setActivo] = useState(inicial?.activo ?? true);
   const [enviando, setEnviando] = useState(false);
+  // undefined: no se tocó la foto; null: se quitó; File: foto nueva
+  const [foto, setFoto] = useState<File | null | undefined>(undefined);
+  const [vista, setVista] = useState<string | null>(inicial?.foto_url ?? null);
+  const archivo = useRef<HTMLInputElement>(null);
+  useEffect(() => () => { if (vista?.startsWith("blob:")) URL.revokeObjectURL(vista); }, [vista]);
   const pinOk = pin === "" ? !!inicial : /^[0-9]{4,6}$/.test(pin);
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
     if (!nombre.trim() || !pinOk) return;
     setEnviando(true);
-    await onGuardar({ nombre: nombre.trim(), rol, pin, activo });
+    await onGuardar({ nombre: nombre.trim(), rol, pin, activo, foto });
     setEnviando(false);
   }
   return (
     <form className="editor entra" onSubmit={enviar}>
+      <div className="campo"><span>Foto</span>
+        <div className="foto-fila">
+          <button type="button" className="foto-caja redonda" onClick={() => archivo.current?.click()} aria-label={vista ? "Cambiar foto" : "Poner foto"}>
+            {vista ? <img src={vista} alt="" /> : <span className="logo-vacio"><Icono n="foto" tam={24} /><small>Foto</small></span>}
+          </button>
+          <div className="pila-corta">
+            <button type="button" className="secundario" onClick={() => archivo.current?.click()}>{vista ? "Cambiar foto" : "Poner foto"}</button>
+            {vista && <button type="button" className="texto peligro" onClick={() => { setFoto(null); setVista(null); }}>Quitar foto</button>}
+            <p className="nota">Sale en su gafete y cuando entra con su PIN.</p>
+          </div>
+          <input ref={archivo} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) { setFoto(f); setVista(URL.createObjectURL(f)); } e.target.value = ""; }} />
+        </div>
+      </div>
       <label className="campo"><span>Nombre</span>
         <input className="entrada" autoFocus={conTeclado} maxLength={60} required value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="off" name="nombre-empleado" placeholder="Como lo conocen en el restaurante" />
       </label>

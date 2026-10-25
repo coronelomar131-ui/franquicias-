@@ -44,7 +44,7 @@ function Indice({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) => voi
     return () => { vivo = false; };
   }, [rid]);
 
-  const color = COLORES.find((c) => c.id === actual?.color_marca)?.nombre ?? "Achiote";
+  const color = actual?.color_principal ? "Colores propios" : COLORES.find((c) => c.id === actual?.color_marca)?.nombre ?? "Achiote";
   const letra = TIPOGRAFIAS.find((t) => t.id === actual?.tipografia)?.nombre ?? "Fonda";
   const resumen: Record<Parte, string> = {
     negocio: `${actual?.logo_url ? "Con logo" : "Sin logo"} · ${color} · Letra ${letra}`,

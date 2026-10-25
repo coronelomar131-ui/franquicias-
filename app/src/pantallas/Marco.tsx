@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 import type { Lugar, Ruta } from "../lib/ruta";
 import { aplicarMarca, hexFondo } from "../lib/marca";
 import { Icono, type NombreIcono } from "../componentes/Icono";
+import { Cara } from "../componentes/Cara";
 
 const PESTANAS: { id: Ruta; texto: string; icono: NombreIcono }[] = [
   { id: "salon", texto: "Salón", icono: "salon" },
@@ -64,7 +65,7 @@ export function Marco({ lugar, ir, children }: { lugar: Lugar; ir: (r: Ruta, par
   useEffect(() => {
     const cocina = ruta === "cocina";
     document.documentElement.dataset.tema = cocina ? "cocina" : "";
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", cocina ? "#1f2227" : hexFondo(actual?.fondo));
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", cocina ? "#1f2227" : hexFondo(actual?.fondo, actual?.color_fondo));
     return () => { document.documentElement.dataset.tema = ""; };
   }, [ruta]); // eslint-disable-line react-hooks/exhaustive-deps
   const primera = useRef(true);
@@ -89,7 +90,7 @@ export function Marco({ lugar, ir, children }: { lugar: Lugar; ir: (r: Ruta, par
         ) : <span className="cab-nombre" translate="no">{actual?.nombre}{actual?.eslogan && <small>{actual.eslogan}</small>}</span>}
         {modo && persona ? (
           <button className="cab-persona" type="button" onClick={soltar} aria-label={`${persona.nombre}. Cambiar de persona`}>
-            <span className="cara-ini" aria-hidden="true">{persona.nombre.trim().charAt(0).toUpperCase()}</span>
+            <Cara nombre={persona.nombre} foto={persona.foto_url} />
             <span className="cab-persona-txt"><b>{persona.nombre}</b><small>Cambiar</small></span>
           </button>
         ) : <button className="cab-salir" type="button" onClick={salir} aria-label="Cerrar sesión"><Icono n="salir" tam={20} /></button>}

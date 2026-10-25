@@ -95,7 +95,7 @@
 .vacio-grande p { color: var(--tinta-2); max-width: 46ch; }
 
 /* ── Sellos ───────────────────────────────── */
-.sello-mini { display: inline-block; margin-left: 8px; padding: 1px 7px 0; border: 1.5px solid var(--acento); border-radius: 3px; color: var(--acento); font-family: var(--titulo); font-weight: 700; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; transform: rotate(-3deg); vertical-align: middle; }
+.sello-mini { display: inline-block; margin-left: 8px; padding: 1px 7px 0; border: 1.5px solid var(--acento-tinta); border-radius: 3px; color: var(--acento-tinta); font-family: var(--titulo); font-weight: 700; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; transform: rotate(-3deg); vertical-align: middle; }
 
 /* ── Editor en línea (sin ventanas encima) ── */
 .editor { display: grid; gap: 14px; margin: 10px 0 14px; padding: 18px; border-radius: 18px; background: var(--papel-2); border: 1px solid var(--linea); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.5); }
@@ -111,7 +111,7 @@ select.entrada { appearance: none; padding-right: 36px; background-image: linear
 .interruptor .riel i { position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; border-radius: 50%; background: var(--papel); box-shadow: 0 1px 3px oklch(0.25 0.02 60 / 0.35); transition: transform 200ms var(--ease-out); }
 .interruptor input:checked + .riel { background: var(--tinta); border-color: var(--tinta); }
 .interruptor input:checked + .riel i { transform: translateX(20px); }
-.interruptor input:focus-visible + .riel { outline: 2px solid var(--acento); outline-offset: 3px; }
+.interruptor input:focus-visible + .riel { outline: 2px solid var(--acento-tinta); outline-offset: 3px; }
 
 /* ── Menú como carta ──────────────────────── */
 .indice { display: flex; gap: 2px; overflow-x: auto; padding: 14px calc(var(--m) - 10px) 0; scrollbar-width: none; }
@@ -362,7 +362,7 @@ html[data-tema="cocina"] .pestana[aria-current="page"] { color: var(--ticket-tin
 .letra:active { transform: scale(0.98); }
 .letra b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 650; font-size: 24px; line-height: 1.05; color: var(--tinta); }
 .letra span { font-size: 13px; color: var(--tinta-2); }
-.letra[aria-checked="true"] { border-color: var(--acento); box-shadow: 0 0 0 3px var(--acento-suave); }
+.letra[aria-checked="true"] { border-color: var(--acento-tinta); box-shadow: 0 0 0 3px var(--acento-suave); }
 .muestra.papel i { color: var(--tinta); box-shadow: inset 0 0 0 1.5px var(--trazo); }
 .previa-nom { display: grid; min-width: 0; }
 .previa-nom small { font-family: var(--cuerpo); font-size: 13px; color: oklch(0.22 0.012 60 / 0.7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -393,7 +393,7 @@ html[data-tema="cocina"] .pestana[aria-current="page"] { color: var(--ticket-tin
 .indice-aj > li + li { border-top: 1px solid var(--linea); }
 .fila-aj { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 14px; width: 100%; min-height: 76px; padding: 12px 14px 12px 16px; border: 0; background: transparent; text-align: left; color: var(--tinta); transition: background-color 160ms ease, transform 140ms var(--ease-out); }
 .fila-aj:active { background: var(--papel-2); }
-.fila-ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--acento-suave); color: var(--acento); }
+.fila-ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--acento-suave); color: var(--acento-tinta); }
 .fila-txt { display: grid; gap: 2px; min-width: 0; }
 .fila-txt b { font-family: var(--titulo); font-weight: 600; font-size: 21px; line-height: 1.1; }
 .fila-txt small { font-size: 14px; color: var(--tinta-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -449,7 +449,7 @@ html[data-tema="cocina"] .pestana[aria-current="page"] { color: var(--ticket-tin
 .pin-puntos i.lleno { background: var(--tinta); border-color: var(--tinta); animation: punto 160ms var(--ease-out); }
 @keyframes punto { from { transform: scale(0.6); } }
 .pin-puntos.sacude { animation: sacude 340ms var(--ease-in-out); }
-.pin-puntos.sacude i { border-color: var(--acento); }
+.pin-puntos.sacude i { border-color: var(--peligro); }
 @keyframes sacude { 20% { transform: translateX(-10px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(3px); } }
 .teclado-error { min-height: 22px; }
 .teclas { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 6px; }
@@ -481,3 +481,38 @@ html[data-tema="cocina"] .pestana[aria-current="page"] { color: var(--ticket-tin
 @media (prefers-reduced-motion: reduce) {
   .pin-puntos.sacude, .pin-puntos i.lleno { animation: none; }
 }
+
+/* ── Colores libres ────────────────────────── */
+.tonos { max-width: 440px; margin-bottom: 12px; }
+.paleta { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px 4px; }
+.gota { display: grid; justify-items: center; gap: 5px; padding: 8px 2px; border: 0; border-radius: 14px; background: transparent; font-size: 12.5px; font-weight: 500; color: var(--tinta-2); cursor: pointer; transition: transform 140ms var(--ease-out); }
+.gota:active { transform: scale(0.95); }
+.gota i { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--c); color: var(--tinta); box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.14); transition: box-shadow 160ms ease; }
+.gota i .ico { width: 26px; height: 26px; border-radius: 50%; background: var(--papel); }
+.gota[aria-checked="true"], .gota.elegido { color: var(--tinta); font-weight: 600; }
+.gota[aria-checked="true"] i, .gota.elegido i { box-shadow: 0 0 0 2px var(--papel), 0 0 0 4px var(--tinta); }
+.gota.ninguno i { background: oklch(0.85 0.12 82); }
+.gota.otro:not(.elegido) i { background: conic-gradient(from 0deg, oklch(0.65 0.2 27), oklch(0.8 0.17 90), oklch(0.7 0.17 150), oklch(0.65 0.13 230), oklch(0.55 0.2 300), oklch(0.65 0.2 27)); }
+.gota.otro:focus-within i { outline: 2px solid var(--acento-tinta); outline-offset: 3px; }
+.nota.guia { margin-top: -6px; }
+.combos { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px; margin: 0 -2px; scrollbar-width: none; scroll-snap-type: x proximity; }
+.combo { flex: none; scroll-snap-align: start; display: grid; justify-items: center; gap: 6px; padding: 10px 10px 8px; border: 1.5px solid var(--linea); border-radius: 16px; background: var(--ticket); font-size: 13px; font-weight: 600; color: var(--tinta); transition: transform 140ms var(--ease-out), border-color 160ms ease; }
+.combo:active { transform: scale(0.96); }
+.combo[aria-pressed="true"] { border-color: var(--tinta); }
+.combo-muestra { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; width: 64px; height: 44px; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.12); background: var(--f); }
+.combo-muestra i:nth-child(1) { grid-row: 1 / 3; background: var(--p); }
+.combo-muestra i:nth-child(2) { background: var(--s); }
+.previa-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.previa-chip { padding: 4px 10px 3px; border-radius: 999px; border: 1.3px solid var(--ticket-tinta); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: var(--e-libre); }
+.previa-chip.ocupada { background: var(--e-ocupada); }
+@media (min-width: 900px) { .vista-previa { position: sticky; top: 16px; } }
+@media (hover: hover) and (pointer: fine) {
+  .gota:hover:not([aria-checked="true"]):not(.elegido) i { box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.14), 0 0 0 3px var(--papel-3); }
+  .combo:hover:not([aria-pressed="true"]) { border-color: var(--tinta-2); }
+}
+
+/* ── Fotos del equipo ──────────────────────── */
+.con-foto { overflow: hidden; padding: 0; background: var(--papel-2); }
+.con-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.foto-caja.redonda { border-radius: 50%; }
+.cara-ini.grande { width: 84px; height: 84px; font-size: 38px; margin-bottom: 6px; }
