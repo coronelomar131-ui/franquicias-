@@ -3,8 +3,13 @@ import { supabase } from "../lib/supabase";
 import { mensajeError } from "../lib/formato";
 import { Segmento } from "../componentes/Controles";
 import { MesaDibujo } from "../componentes/MesaDibujo";
+import { aplicarMarca } from "../lib/marca";
+import { codigoGuardado } from "../lib/acceso";
+import { AccesoEquipo } from "./AccesoEquipo";
 
 export function Entrar() {
+  // Un teléfono que ya usó el código del restaurante abre directo en "Equipo"
+  const [quien, setQuien] = useState<"dueno" | "equipo">(() => (codigoGuardado() ? "equipo" : "dueno"));
   const [modo, setModo] = useState<"entrar" | "crear">("entrar");
   const [correo, setCorreo] = useState("");
   const [clave, setClave] = useState("");
@@ -15,6 +20,8 @@ export function Entrar() {
 
   // La mesa de la portada se llena una vez, como un salón que abre
   useEffect(() => { const t = window.setTimeout(() => setSentados(4), 500); return () => window.clearTimeout(t); }, []);
+  // Al salir de una sesión la marca del restaurante se quedaba puesta; la entrada del dueño va con la de Comandero
+  useEffect(() => { if (quien === "dueno") aplicarMarca(null); }, [quien]);
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
@@ -40,12 +47,20 @@ export function Entrar() {
         <p className="entrar-lema">Mesas, comandas<br />y caja en un solo lugar.</p>
       </section>
       <section className="entrar-forma escalon">
-        <h1 className="titulo" style={{ ["--i" as string]: 0 }}>{modo === "entrar" ? "Entra a tu restaurante" : "Crea tu cuenta"}</h1>
-        <div style={{ ["--i" as string]: 1 }}>
+        <div className="quien-entra" style={{ ["--i" as string]: 0 }}>
+          <Segmento etiqueta="Quién entra" valor={quien} onCambio={(q) => { setQuien(q); setError(""); setAviso(""); }}
+            opciones={[{ id: "equipo", texto: "Soy del equipo" }, { id: "dueno", texto: "Soy el dueño" }]} />
+        </div>
+        {quien === "equipo" ? (<>
+          <h1 className="titulo" style={{ ["--i" as string]: 1 }}>Entra a trabajar</h1>
+          <div style={{ ["--i" as string]: 2 }}><AccesoEquipo /></div>
+        </>) : (<>
+        <h1 className="titulo" style={{ ["--i" as string]: 1 }}>{modo === "entrar" ? "Entra a tu restaurante" : "Crea tu cuenta"}</h1>
+        <div style={{ ["--i" as string]: 2 }}>
           <Segmento etiqueta="Modo" valor={modo} onCambio={(m) => { setModo(m); setError(""); setAviso(""); }}
             opciones={[{ id: "entrar", texto: "Entrar" }, { id: "crear", texto: "Crear cuenta" }]} />
         </div>
-        <form onSubmit={enviar} className="pila" style={{ ["--i" as string]: 2 }} noValidate>
+        <form onSubmit={enviar} className="pila" style={{ ["--i" as string]: 3 }} noValidate>
           <label className="campo"><span>Correo</span>
             <input className="entrada" type="email" name="email" autoComplete="email" inputMode="email" spellCheck={false} required value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="tu@correo.com" />
           </label>
@@ -58,7 +73,8 @@ export function Entrar() {
             {enviando ? "Un momento…" : modo === "entrar" ? "Entrar" : "Crear cuenta"}
           </button>
         </form>
-        <p className="nota" style={{ ["--i" as string]: 3 }}>La cuenta es del dueño. Los meseros entran después con su PIN, sin correo.</p>
+        <p className="nota" style={{ ["--i" as string]: 4 }}>La cuenta con correo es del dueño. Tu equipo entra en "Soy del equipo" con el código del restaurante y su PIN.</p>
+        </>)}
       </section>
     </main>
   );

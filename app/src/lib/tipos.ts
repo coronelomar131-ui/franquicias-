@@ -8,6 +8,7 @@ export interface Restaurante {
   id: string; nombre: string; zona_horaria: string; logo_url: string | null;
   color_marca: ColorMarca; tipografia: Tipografia; fondo: Fondo; eslogan: string;
   color_principal: string | null; color_secundario: string | null; color_fondo: string | null;
+  codigo_equipo?: string;
 }
 export interface Categoria { id: string; restaurante_id: string; nombre: string; orden: number; activa: boolean; }
 export interface Producto {

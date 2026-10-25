@@ -1,23 +1,23 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { supabase } from "../lib/supabase";
+import { useSesion } from "./sesion";
 import type { Empleado, Rol } from "../lib/tipos";
 import type { Ruta } from "../lib/ruta";
 
-/** Qué pestañas ve cada puesto. El dueño (sin modo equipo) ve todo. */
+/** Qué pestañas ve cada puesto. El dueño ve todo. */
 export const PERMISOS: Record<Rol, Ruta[]> = {
   mesero: ["salon"],
   cocina: ["cocina"],
   caja: ["salon", "cocina"],
   gerente: ["salon", "cocina", "menu"],
 };
-/** Sin tocar la pantalla este tiempo, la tableta pide PIN otra vez. */
+/** Sin tocar la pantalla este tiempo, la sesión del equipo se cierra y vuelve a pedir PIN. */
 const INACTIVIDAD_MS = 3 * 60 * 1000;
 
 interface Equipo {
+  /** true cuando quien entró es del equipo (cuenta interna con PIN), no el dueño. */
   modo: boolean;
   persona: Empleado | null;
-  activar: () => void;
-  desactivar: () => void;
-  entrar: (e: Empleado) => void;
   soltar: () => void;
   puede: (r: Ruta) => boolean;
 }
@@ -28,41 +28,40 @@ export function useEquipo() {
   return e;
 }
 
-// El modo vive en la tableta (localStorage); quién la trae puesta, solo en esta pestaña (sessionStorage)
-const llaveModo = (rid: string) => "comandero:modo-equipo:" + rid;
-const llavePersona = (rid: string) => "comandero:persona:" + rid;
-function leer<T>(s: () => Storage, k: string): T | null { try { const v = s().getItem(k); return v ? (JSON.parse(v) as T) : null; } catch { return null; } }
-function escribir(s: () => Storage, k: string, v: unknown) { try { if (v === null) s().removeItem(k); else s().setItem(k, JSON.stringify(v)); } catch { /* sin almacenamiento */ } }
-
-export function ProveedorEquipo({ rid, children }: { rid: string; children: ReactNode }) {
-  const [modo, setModo] = useState(() => leer<boolean>(() => localStorage, llaveModo(rid)) === true);
-  const [persona, setPersona] = useState<Empleado | null>(() => leer<Empleado>(() => sessionStorage, llavePersona(rid)));
+export function ProveedorEquipo({ children }: { children: ReactNode }) {
+  const { sesion, salir } = useSesion();
+  // El puesto viene en app_metadata de la sesión: lo pone el servidor y la persona no lo puede cambiar
+  const meta = sesion?.user.app_metadata as { empleado_id?: string; rol?: Rol; restaurante_id?: string } | undefined;
+  const empleadoId = meta?.empleado_id ?? null;
+  const [persona, setPersona] = useState<Empleado | null>(null);
   const reloj = useRef<number>();
+  const salirRef = useRef(salir);
+  salirRef.current = salir;
 
   useEffect(() => {
-    setModo(leer<boolean>(() => localStorage, llaveModo(rid)) === true);
-    setPersona(leer<Empleado>(() => sessionStorage, llavePersona(rid)));
-  }, [rid]);
+    if (!empleadoId) { setPersona(null); return; }
+    let vivo = true;
+    supabase.from("empleados").select("id, restaurante_id, nombre, rol, activo, foto_url").eq("id", empleadoId).maybeSingle()
+      .then(({ data }) => { if (vivo) setPersona((data as Empleado | null) ?? { id: empleadoId, restaurante_id: meta?.restaurante_id ?? "", nombre: "", rol: meta?.rol ?? "mesero", activo: true }); });
+    return () => { vivo = false; };
+  }, [empleadoId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const soltar = useCallback(() => { setPersona(null); escribir(() => sessionStorage, llavePersona(rid), null); }, [rid]);
-
-  // Bloqueo por inactividad: cualquier toque reinicia la cuenta
+  // Tableta compartida: si nadie la toca, se cierra la sesión de esa persona
   useEffect(() => {
-    if (!modo || !persona) return;
-    const reiniciar = () => { window.clearTimeout(reloj.current); reloj.current = window.setTimeout(soltar, INACTIVIDAD_MS); };
+    if (!empleadoId) return;
+    const reiniciar = () => { window.clearTimeout(reloj.current); reloj.current = window.setTimeout(() => { void salirRef.current(); }, INACTIVIDAD_MS); };
     reiniciar();
     const eventos = ["pointerdown", "keydown", "scroll"] as const;
     eventos.forEach((ev) => addEventListener(ev, reiniciar, { passive: true }));
     return () => { window.clearTimeout(reloj.current); eventos.forEach((ev) => removeEventListener(ev, reiniciar)); };
-  }, [modo, persona, soltar]);
+  }, [empleadoId]);
 
+  const rol = persona?.rol ?? meta?.rol ?? "mesero";
   const valor: Equipo = {
-    modo, persona,
-    activar: () => { setModo(true); escribir(() => localStorage, llaveModo(rid), true); soltar(); },
-    desactivar: () => { setModo(false); escribir(() => localStorage, llaveModo(rid), null); soltar(); },
-    entrar: (e) => { setPersona(e); escribir(() => sessionStorage, llavePersona(rid), e); },
-    soltar,
-    puede: (r) => !modo || (!!persona && (PERMISOS[persona.rol].includes(r) || (r === "pedido" && PERMISOS[persona.rol].includes("salon")))),
+    modo: !!empleadoId,
+    persona,
+    soltar: () => { void salir(); },
+    puede: (r) => !empleadoId || PERMISOS[rol].includes(r) || (r === "pedido" && PERMISOS[rol].includes("salon")),
   };
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;
 }
