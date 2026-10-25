@@ -64,7 +64,7 @@ button:disabled { cursor: not-allowed; }
 .primario:disabled, .secundario:disabled, .icono-b:disabled { opacity: 0.38; }
 .ancho { width: 100%; }
 @media (hover: hover) and (pointer: fine) {
-  .primario:hover:not(:disabled) { background: oklch(0.44 0.14 36); }
+  .primario:hover:not(:disabled) { background: var(--acento-hover, var(--acento)); }
   .secundario:hover:not(:disabled), .icono-b:hover:not(:disabled) { background: oklch(0.25 0.02 60 / 0.05); }
   .texto:hover { text-decoration-color: currentColor; }
 }

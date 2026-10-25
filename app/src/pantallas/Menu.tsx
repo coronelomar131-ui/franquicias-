@@ -1,7 +1,8 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { supabase } from "../lib/supabase";
 import type { Categoria, Producto } from "../lib/tipos";
 import { aCentavos, mensajeError, pesos } from "../lib/formato";
+import { borrarImagen, subirImagen } from "../lib/imagen";
 import { useAviso } from "../componentes/Aviso";
 import { DobleToque } from "../componentes/Controles";
 import { Icono } from "../componentes/Icono";
@@ -107,12 +108,13 @@ export function Menu({ rid }: { rid: string }) {
                 {items.map((p, pi) => (
                   <li key={p.id} className={!p.activo ? "apagado" : undefined}>
                     {edicion?.tipo === "producto" && edicion.id === p.id ? (
-                      <FormaProducto cats={cats} inicial={p} onCancelar={() => setEdicion(null)}
+                      <FormaProducto rid={rid} cats={cats} inicial={p} onCancelar={() => setEdicion(null)}
                         onGuardar={async (v) => { if (await hacer(() => supabase.from("productos").update(v).eq("id", p.id), "Platillo guardado")) setEdicion(null); }}
-                        onBorrar={async () => { if (await hacer(() => supabase.from("productos").delete().eq("id", p.id), "Platillo borrado")) setEdicion(null); }}
+                        onBorrar={async () => { if (await hacer(() => supabase.from("productos").delete().eq("id", p.id), "Platillo borrado")) { borrarImagen(p.foto_url).catch(() => {}); setEdicion(null); } }}
                         onMover={(dir) => mover(items, "productos", p.id, dir)} puedeSubir={pi > 0} puedeBajar={pi < items.length - 1} />
                     ) : (
-                      <button type="button" className="plato" onClick={() => setEdicion({ tipo: "producto", id: p.id, categoria: p.categoria_id })} aria-label={`Editar ${p.nombre}, ${pesos(p.precio_centavos)}`}>
+                      <button type="button" className={"plato" + (p.foto_url ? " con-foto" : "")} onClick={() => setEdicion({ tipo: "producto", id: p.id, categoria: p.categoria_id })} aria-label={`Editar ${p.nombre}, ${pesos(p.precio_centavos)}`}>
+                        {p.foto_url && <img className="plato-foto" src={p.foto_url} alt="" loading="lazy" width={56} height={56} />}
                         <span className="plato-nom">{p.nombre}{!p.activo && <span className="sello-mini">Agotado</span>}</span>
                         <span className="puntos" aria-hidden="true" />
                         <span className="plato-precio">{pesos(p.precio_centavos)}</span>
@@ -123,7 +125,7 @@ export function Menu({ rid }: { rid: string }) {
                 ))}
                 <li>
                   {edicion?.tipo === "producto" && edicion.id === "nuevo" && edicion.categoria === (cat?.id ?? null) ? (
-                    <FormaProducto cats={cats} inicial={{ categoria_id: cat?.id ?? null }} onCancelar={() => setEdicion(null)}
+                    <FormaProducto rid={rid} cats={cats} inicial={{ categoria_id: cat?.id ?? null }} onCancelar={() => setEdicion(null)}
                       onGuardar={async (v) => {
                         const orden = items.length ? Math.max(...items.map((x) => x.orden)) + 1 : 0;
                         if (await hacer(() => supabase.from("productos").insert({ ...v, restaurante_id: rid, orden }), "Platillo agregado")) setEdicion({ tipo: "producto", id: "nuevo", categoria: v.categoria_id });
@@ -172,9 +174,9 @@ function FormaCategoria({ inicial, onGuardar, onCancelar, extra }: { inicial: st
   );
 }
 
-type ValoresProducto = { nombre: string; descripcion: string; precio_centavos: number; activo: boolean; categoria_id: string | null };
-function FormaProducto({ cats, inicial, onGuardar, onCancelar, onBorrar, onMover, puedeSubir, puedeBajar }: {
-  cats: Categoria[]; inicial: Partial<Producto>; onGuardar: (v: ValoresProducto) => Promise<void>; onCancelar: () => void;
+type ValoresProducto = { nombre: string; descripcion: string; precio_centavos: number; activo: boolean; categoria_id: string | null; foto_url: string | null };
+function FormaProducto({ rid, cats, inicial, onGuardar, onCancelar, onBorrar, onMover, puedeSubir, puedeBajar }: {
+  rid: string; cats: Categoria[]; inicial: Partial<Producto>; onGuardar: (v: ValoresProducto) => Promise<void>; onCancelar: () => void;
   onBorrar?: () => Promise<void>; onMover?: (dir: -1 | 1) => void; puedeSubir?: boolean; puedeBajar?: boolean;
 }) {
   const [nombre, setNombre] = useState(inicial.nombre ?? "");
@@ -182,20 +184,46 @@ function FormaProducto({ cats, inicial, onGuardar, onCancelar, onBorrar, onMover
   const [precio, setPrecio] = useState(inicial.precio_centavos !== undefined ? String(inicial.precio_centavos / 100) : "");
   const [activo, setActivo] = useState(inicial.activo ?? true);
   const [cat, setCat] = useState<string>(inicial.categoria_id ?? "");
+  const [foto, setFoto] = useState<string | null>(inicial.foto_url ?? null);
+  const [subiendo, setSubiendo] = useState(false);
+  const [errorFoto, setErrorFoto] = useState("");
+  const archivo = useRef<HTMLInputElement>(null);
   const [enviando, setEnviando] = useState(false);
   const centavos = aCentavos(precio);
+  async function elegirFoto(f: File | undefined) {
+    if (!f) return;
+    setSubiendo(true); setErrorFoto("");
+    try {
+      const url = await subirImagen(rid, "productos", f);
+      if (foto && foto !== inicial.foto_url) borrarImagen(foto).catch(() => {});
+      setFoto(url);
+    } catch (e) { setErrorFoto(mensajeError(e)); }
+    finally { setSubiendo(false); if (archivo.current) archivo.current.value = ""; }
+  }
   const valido = nombre.trim().length > 0 && centavos !== null && centavos <= 10000000;
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
     if (!valido) return;
     setEnviando(true);
-    await onGuardar({ nombre: nombre.trim(), descripcion: desc.trim(), precio_centavos: centavos!, activo, categoria_id: cat || null });
+    await onGuardar({ nombre: nombre.trim(), descripcion: desc.trim(), precio_centavos: centavos!, activo, categoria_id: cat || null, foto_url: foto });
+    if (inicial.foto_url && inicial.foto_url !== foto) borrarImagen(inicial.foto_url).catch(() => {});
     setEnviando(false);
-    if (!inicial.id) { setNombre(""); setDesc(""); setPrecio(""); }
+    if (!inicial.id) { setNombre(""); setDesc(""); setPrecio(""); setFoto(null); }
   }
   return (
     <form className="editor entra" onSubmit={enviar}>
+      <div className="foto-fila">
+        <button type="button" className={"foto-caja" + (subiendo ? " subiendo" : "")} onClick={() => archivo.current?.click()} disabled={subiendo} aria-label={foto ? "Cambiar foto del platillo" : "Agregar foto del platillo"}>
+          {foto ? <img src={foto} alt="Foto del platillo" /> : <span className="logo-vacio"><Icono n="foto" tam={26} /><small>{subiendo ? "Subiendo…" : "Foto"}</small></span>}
+        </button>
+        <div className="pila-corta">
+          <span className="nota">{subiendo ? "Subiendo foto…" : foto ? "Así la ven los meseros al tomar el pedido." : "Una foto ayuda a los meseros a no equivocarse."}</span>
+          {foto && !subiendo && <button type="button" className="texto peligro" onClick={() => setFoto(null)}>Quitar foto</button>}
+          {errorFoto && <p className="error">{errorFoto}</p>}
+        </div>
+        <input ref={archivo} type="file" accept="image/*" hidden onChange={(e) => elegirFoto(e.target.files?.[0])} />
+      </div>
       <div className="editor-fila">
         <label className="campo crece"><span>Platillo</span>
           <input className="entrada" autoFocus maxLength={80} required value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tacos al pastor" autoComplete="off" name="platillo" />
@@ -222,7 +250,7 @@ function FormaProducto({ cats, inicial, onGuardar, onCancelar, onBorrar, onMover
       </div>
       {precio && centavos === null && <p className="error">Escribe el precio con números, por ejemplo 95 o 120.50.</p>}
       <div className="editor-acc">
-        <button className="primario" type="submit" disabled={enviando || !valido}>{enviando ? "Guardando…" : inicial.id ? "Guardar" : "Agregar"}</button>
+        <button className="primario" type="submit" disabled={enviando || subiendo || !valido}>{enviando ? "Guardando…" : inicial.id ? "Guardar" : "Agregar"}</button>
         <button className="secundario" type="button" onClick={onCancelar}>{inicial.id ? "Cancelar" : "Listo"}</button>
         {onMover && <>
           <button className="icono-b" type="button" disabled={!puedeSubir} onClick={() => onMover(-1)} aria-label="Subir platillo"><Icono n="arriba" /></button>

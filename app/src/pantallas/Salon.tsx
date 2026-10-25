@@ -8,7 +8,7 @@ import { MesaDibujo } from "../componentes/MesaDibujo";
 import { DobleToque, Paso } from "../componentes/Controles";
 import { Icono } from "../componentes/Icono";
 
-export function Salon({ rid, irA }: { rid: string; irA: (r: Ruta) => void }) {
+export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) => void }) {
   const avisar = useAviso();
   const [mesas, setMesas] = useState<Mesa[] | null>(null);
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
@@ -59,6 +59,8 @@ export function Salon({ rid, irA }: { rid: string; irA: (r: Ruta) => void }) {
 
   function elegir(m: Mesa) {
     if (sel === m.id) { setSel(null); return; }
+    const o = ordenDe(m.id);
+    if (o) { ir("pedido", o.id); return; }
     setSel(m.id);
     setComensales(Math.min(2, m.lugares));
   }
@@ -67,10 +69,12 @@ export function Salon({ rid, irA }: { rid: string; irA: (r: Ruta) => void }) {
     if (!mesaSel) return;
     setTrabajando(true);
     try {
-      const { error } = await supabase.from("ordenes").insert({ restaurante_id: rid, mesa_id: mesaSel.id, comensales });
+      const { data, error } = await supabase.from("ordenes").insert({ restaurante_id: rid, mesa_id: mesaSel.id, comensales }).select("id").single();
       if (error) throw error;
       await cargarOrdenes();
       avisar(`Mesa ${mesaSel.nombre} abierta · ${comensales} ${comensales === 1 ? "comensal" : "comensales"}`);
+      // Deja ver cómo se sientan los comensales y pasa directo a tomar el pedido
+      window.setTimeout(() => ir("pedido", data.id), matchMedia("(prefers-reduced-motion: reduce)").matches ? 150 : 650);
     } catch (e) { avisar(mensajeError(e), "error"); }
     finally { setTrabajando(false); }
   }
@@ -103,7 +107,7 @@ export function Salon({ rid, irA }: { rid: string; irA: (r: Ruta) => void }) {
           <MesaDibujo forma="larga" lugares={6} />
           <strong>Tu salón está vacío</strong>
           <p>Dibuja tus mesas una vez, con su forma y sus lugares. Después aquí ves cuáles están libres y cuáles ocupadas.</p>
-          <button className="primario" type="button" onClick={() => irA("mesas")}>Agregar mesas</button>
+          <button className="primario" type="button" onClick={() => { try { sessionStorage.setItem("comandero:ajustes", "mesas"); } catch { /* */ } ir("ajustes"); }}>Agregar mesas</button>
         </div>
       ) : (
         <div className="plano">
@@ -149,7 +153,7 @@ export function Salon({ rid, irA }: { rid: string; irA: (r: Ruta) => void }) {
           {ordenSel ? (
             <>
               <p className="hoja-dato"><b>{ordenSel.comensales}</b> {ordenSel.comensales === 1 ? "comensal" : "comensales"} · abierta hace <b>{minutosDesde(ordenSel.abierta_en)}</b> min</p>
-              <p className="nota">Tomar el pedido, mandar a cocina y cobrar llegan en la siguiente entrega.</p>
+              <button className="primario" type="button" onClick={() => ir("pedido", ordenSel.id)}>Tomar pedido</button>
               <DobleToque texto="Liberar mesa" pregunta="¿Liberar? Toca otra vez" onConfirmar={liberar} disabled={trabajando} />
             </>
           ) : (
