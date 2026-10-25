@@ -41,7 +41,7 @@ export function Mesas({ rid }: { rid: string }) {
     await cargar().catch(() => {});
   }
 
-  if (mesas === null) return <div className="mesas-ed"><h1 className="titulo" tabIndex={-1}>Mesas</h1><p className="sub">Cargando…</p></div>;
+  if (mesas === null) return <div className="mesas-ed"><h1 className="titulo" tabIndex={-1}>Mesas</h1><p className="sub espera">Cargando…</p></div>;
   const lugares = mesas.filter((m) => m.activa).reduce((s, m) => s + m.lugares, 0);
   const actual = mesas.find((m) => m.id === sel);
   const siguiente = String(mesas.reduce((n, m) => Math.max(n, Number(m.nombre) || 0), 0) + 1);

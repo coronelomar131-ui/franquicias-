@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { useSesion } from "../estado/sesion";
+import { useEquipo } from "../estado/equipo";
 import type { Mesa, Orden } from "../lib/tipos";
 import type { Ruta } from "../lib/ruta";
 import { mensajeError, minutosDesde } from "../lib/formato";
@@ -10,6 +12,7 @@ import { Icono } from "../componentes/Icono";
 
 export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) => void }) {
   const avisar = useAviso();
+  const { modo, persona } = useEquipo();
   const [mesas, setMesas] = useState<Mesa[] | null>(null);
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
   const [sel, setSel] = useState<string | null>(null);
@@ -69,7 +72,7 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
     if (!mesaSel) return;
     setTrabajando(true);
     try {
-      const { data, error } = await supabase.from("ordenes").insert({ restaurante_id: rid, mesa_id: mesaSel.id, comensales }).select("id").single();
+      const { data, error } = await supabase.from("ordenes").insert({ restaurante_id: rid, mesa_id: mesaSel.id, comensales, abierta_por: persona?.id ?? null }).select("id").single();
       if (error) throw error;
       await cargarOrdenes();
       avisar(`Mesa ${mesaSel.nombre} abierta · ${comensales} ${comensales === 1 ? "comensal" : "comensales"}`);
@@ -92,7 +95,7 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
     finally { setTrabajando(false); }
   }
 
-  if (mesas === null) return <div className="salon"><h1 className="titulo" tabIndex={-1}>Salón</h1><p className="sub">Cargando mesas…</p></div>;
+  if (mesas === null) return <div className="salon"><h1 className="titulo" tabIndex={-1}>Salón</h1><p className="sub espera">Cargando mesas…</p></div>;
 
   const ocupadas = mesas.filter((m) => ordenDe(m.id)).length;
   return (
@@ -102,12 +105,14 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
         {mesas.length > 0 && <p className="sub"><b>{ocupadas}</b> de {mesas.length} mesas ocupadas</p>}
       </div>
 
+      {!modo && <PuestaAPunto rid={rid} mesas={mesas.length} ir={ir} />}
+
       {mesas.length === 0 ? (
         <div className="vacio-grande">
           <MesaDibujo forma="larga" lugares={6} />
           <strong>Tu salón está vacío</strong>
           <p>Dibuja tus mesas una vez, con su forma y sus lugares. Después aquí ves cuáles están libres y cuáles ocupadas.</p>
-          <button className="primario" type="button" onClick={() => { try { sessionStorage.setItem("comandero:ajustes", "mesas"); } catch { /* */ } ir("ajustes"); }}>Agregar mesas</button>
+          {modo ? <p>Pídele al dueño que las agregue en Ajustes.</p> : <button className="primario" type="button" onClick={() => ir("ajustes", "mesas")}>Agregar mesas</button>}
         </div>
       ) : (
         <div className="plano">
@@ -167,5 +172,51 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
         </section>
       )}
     </div>
+  );
+}
+
+/** Pasos para dejar listo el restaurante. Desaparece sola cuando todo está hecho. */
+function PuestaAPunto({ rid, mesas, ir }: { rid: string; mesas: number; ir: (r: Ruta, param?: string) => void }) {
+  const { actual } = useSesion();
+  const llave = "comandero:listo:" + rid;
+  const [oculta, setOculta] = useState(() => { try { return localStorage.getItem(llave) === "1"; } catch { return false; } });
+  const [c, setC] = useState<{ platillos: number; equipo: number } | null>(null);
+  useEffect(() => {
+    let vivo = true;
+    Promise.all([
+      supabase.from("productos").select("id", { count: "exact", head: true }).eq("restaurante_id", rid),
+      supabase.from("empleados").select("id", { count: "exact", head: true }).eq("restaurante_id", rid),
+    ]).then(([p, e]) => { if (vivo) setC({ platillos: p.count ?? 0, equipo: e.count ?? 0 }); }).catch(() => {});
+    return () => { vivo = false; };
+  }, [rid]);
+  if (!c || oculta) return null;
+  const pasos: { hecho: boolean; texto: string; ir: () => void }[] = [
+    { hecho: c.platillos > 0, texto: "Sube tu menú con precios y fotos", ir: () => ir("menu") },
+    { hecho: mesas > 0, texto: "Dibuja tus mesas", ir: () => ir("ajustes", "mesas") },
+    { hecho: c.equipo > 0, texto: "Da de alta a tus meseros", ir: () => ir("ajustes", "equipo") },
+    { hecho: !!actual?.logo_url, texto: "Pon tu logo y tu color", ir: () => ir("ajustes", "negocio") },
+  ];
+  const listos = pasos.filter((p) => p.hecho).length;
+  if (listos === pasos.length) return null;
+  return (
+    <section className="apunto entra" aria-labelledby="apunto-t">
+      <div className="apunto-cab">
+        <h2 id="apunto-t">Para empezar</h2>
+        <span className="apunto-n">{listos} de {pasos.length}</span>
+      </div>
+      <div className="apunto-barra" aria-hidden="true"><i style={{ transform: `scaleX(${listos / pasos.length})` }} /></div>
+      <ol>
+        {pasos.map((p, k) => (
+          <li key={k}>
+            <button type="button" className={"paso-ap" + (p.hecho ? " hecho" : "")} onClick={p.ir}>
+              <span className="marca-ap" aria-hidden="true">{p.hecho ? <Icono n="ok" tam={16} /> : k + 1}</span>
+              <span className="paso-txt">{p.texto}{p.hecho && <span className="sr-only"> (listo)</span>}</span>
+              {!p.hecho && <Icono n="adelante" tam={18} />}
+            </button>
+          </li>
+        ))}
+      </ol>
+      <button type="button" className="texto" onClick={() => { setOculta(true); try { localStorage.setItem(llave, "1"); } catch { /* sin almacenamiento */ } }}>Ocultar</button>
+    </section>
   );
 }

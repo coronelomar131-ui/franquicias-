@@ -1,4 +1,5 @@
 import type { ColorMarca, Fondo, Tipografia } from "./tipos";
+import { aHex, contraste, deHex, esHex, papelDe } from "./color";
 
 /** Colores de marca probados con texto claro encima (contraste AA) y sobre el papel. */
 export const COLORES: { id: ColorMarca; nombre: string; color: string; hover: string }[] = [
@@ -27,19 +28,56 @@ export const FONDOS: { id: Fondo; nombre: string; muestra: string; hex: string }
   { id: "salvia", nombre: "Hierbabuena", muestra: "oklch(0.955 0.014 150)", hex: "#ebf1ea" },
 ];
 
-export interface Marca { color_marca?: ColorMarca; tipografia?: Tipografia; fondo?: Fondo }
+export interface Marca {
+  color_marca?: ColorMarca; tipografia?: Tipografia; fondo?: Fondo;
+  color_principal?: string | null; color_secundario?: string | null; color_fondo?: string | null;
+}
 
-export function hexFondo(f: Fondo | undefined) { return (FONDOS.find((x) => x.id === f) ?? FONDOS[0]).hex; }
+export function hexFondo(f: Fondo | undefined, libre?: string | null) {
+  if (esHex(libre)) return papelDe(libre);
+  return (FONDOS.find((x) => x.id === f) ?? FONDOS[0]).hex;
+}
+
+const legado = (id: ColorMarca | undefined) => {
+  const c = COLORES.find((x) => x.id === id) ?? COLORES[0];
+  const [l, ch, h] = c.color.replace(/[^0-9. ]/g, "").trim().split(/\s+/).map(Number);
+  return aHex({ l, c: ch, h });
+};
+/** Color principal en hex: el libre si lo hay, si no el de la paleta original. */
+export const principalDe = (m: Marca | null | undefined) => (esHex(m?.color_principal) ? m!.color_principal! : legado(m?.color_marca));
+
+const TINTA = "#2b231c";
+const CLARO = "#fffcf6";
+
+/** Variables de marca. Va en una hoja aparte (no en style del html) para que el tema de cocina pueda ganarle. */
+function hojaDeMarca(m: Marca | null | undefined): string {
+  const principal = principalDe(m);
+  const o = deHex(principal);
+  const papel = hexFondo(m?.fondo, m?.color_fondo);
+  // Texto encima del botón: claro u oscuro, el que se lea mejor
+  const sobre = contraste(principal, CLARO) >= contraste(principal, TINTA) ? CLARO : TINTA;
+  // Para letras y bordes sobre el papel, oscurece el color hasta que se lea (4.5:1)
+  let tinta = principal, l = o.l;
+  while (contraste(tinta, papel) < 4.5 && l > 0.15) { l -= 0.02; tinta = aHex({ ...o, l }); }
+  const claroCocina = aHex({ l: Math.max(o.l, 0.74), c: Math.min(o.c, 0.14), h: o.h });
+  const hover = aHex({ ...o, l: o.l > 0.6 ? o.l - 0.06 : o.l - 0.04 });
+  const sec = esHex(m?.color_secundario) ? deHex(m!.color_secundario!) : null;
+  const ocupada = sec ? aHex({ l: 0.86, c: Math.min(sec.c, 0.13), h: sec.h }) : null;
+  const secFuerte = sec ? aHex({ l: Math.min(sec.l, 0.55), c: sec.c, h: sec.h }) : null;
+  const fondo = esHex(m?.color_fondo) ? `--papel: ${papel}; --papel-2: ${papelDe(m!.color_fondo!, 0.935)}; --papel-3: ${papelDe(m!.color_fondo!, 0.9)}; --ticket: ${papelDe(m!.color_fondo!, 0.988)}; --e-libre: ${papelDe(m!.color_fondo!, 0.975)};` : "";
+  return `:root { --acento: ${principal}; --acento-hover: ${hover}; --sobre-acento: ${sobre}; --acento-suave: ${principal}1f; --acento-tinta: ${tinta};${ocupada ? ` --e-ocupada: ${ocupada}; --secundario: ${secFuerte};` : ""} }
+html:not([data-tema="cocina"]) { ${fondo} }
+html[data-tema="cocina"] { --acento-tinta: ${claroCocina}; }`;
+}
 
 export function aplicarMarca(m: Marca | null | undefined) {
-  const c = COLORES.find((x) => x.id === m?.color_marca) ?? COLORES[0];
   const t = TIPOGRAFIAS.find((x) => x.id === m?.tipografia) ?? TIPOGRAFIAS[0];
   const raiz = document.documentElement;
-  raiz.style.setProperty("--acento", c.color);
-  raiz.style.setProperty("--acento-hover", c.hover);
-  raiz.style.setProperty("--acento-suave", c.color.replace(")", " / 0.1)"));
-  // Fondo y letra van por atributo: así el tema oscuro de cocina les gana en el CSS
+  let hoja = document.getElementById("marca") as HTMLStyleElement | null;
+  if (!hoja) { hoja = document.createElement("style"); hoja.id = "marca"; document.head.appendChild(hoja); }
+  hoja.textContent = hojaDeMarca(m);
+  // Fondo de paleta y letra van por atributo: así el tema oscuro de cocina les gana en el CSS
   raiz.dataset.fondo = m?.fondo ?? "crema";
   t.cargar().catch(() => {}).finally(() => { raiz.dataset.letra = t.id; });
-  if (raiz.dataset.tema !== "cocina") document.querySelector('meta[name="theme-color"]')?.setAttribute("content", hexFondo(m?.fondo));
+  if (raiz.dataset.tema !== "cocina") document.querySelector('meta[name="theme-color"]')?.setAttribute("content", hexFondo(m?.fondo, m?.color_fondo));
 }

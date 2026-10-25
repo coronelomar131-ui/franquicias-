@@ -50,7 +50,7 @@ export function Menu({ rid }: { rid: string }) {
     await cargar().catch(() => {});
   }
 
-  if (cats === null) return <div className="menu-ed"><h1 className="titulo" tabIndex={-1}>Menú</h1><p className="sub">Cargando…</p></div>;
+  if (cats === null) return <div className="menu-ed"><h1 className="titulo" tabIndex={-1}>Menú</h1><p className="sub espera">Cargando…</p></div>;
 
   const secciones: { cat: Categoria | null; items: Producto[] }[] = [
     ...cats.map((c) => ({ cat: c, items: prods.filter((p) => p.categoria_id === c.id) })),

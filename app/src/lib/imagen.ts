@@ -17,9 +17,9 @@ async function reducir(archivo: File, lado: number): Promise<Blob> {
 }
 
 /** Sube una imagen a la carpeta del restaurante y regresa su dirección pública. */
-export async function subirImagen(rid: string, carpeta: "logo" | "productos", archivo: File): Promise<string> {
+export async function subirImagen(rid: string, carpeta: "logo" | "productos" | "equipo", archivo: File): Promise<string> {
   if (!archivo.type.startsWith("image/")) throw new Error("Elige una imagen (foto o logo)");
-  const blob = await reducir(archivo, carpeta === "logo" ? 512 : 1200);
+  const blob = await reducir(archivo, carpeta === "productos" ? 1200 : 512);
   const ext = blob.type === "image/webp" ? "webp" : "jpg";
   const ruta = `${rid}/${carpeta}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from("imagenes").upload(ruta, blob, { contentType: blob.type, cacheControl: "31536000", upsert: false });

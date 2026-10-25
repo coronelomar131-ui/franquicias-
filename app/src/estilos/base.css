@@ -12,6 +12,8 @@
   --cuadro:  oklch(0.25 0.02 60 / 0.055);
   --acento:  oklch(0.48 0.14 36);
   --acento-suave: oklch(0.48 0.14 36 / 0.1);
+  --acento-tinta: oklch(0.48 0.14 36);
+  --peligro: oklch(0.5 0.18 27);
   --sobre-acento: oklch(0.98 0.01 85);
   --e-libre:      oklch(0.975 0.01 85);
   --e-ocupada:    oklch(0.85 0.12 82);
@@ -46,7 +48,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
 button:disabled { cursor: not-allowed; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; border-radius: 6px; }
+:focus-visible { outline: 2px solid var(--acento-tinta); outline-offset: 3px; border-radius: 6px; }
 .ico { display: inline-grid; place-items: center; flex: none; }
 .ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -66,7 +68,7 @@ button:disabled { cursor: not-allowed; }
 .primario { border: 0; background: var(--acento); color: var(--sobre-acento); }
 .secundario { border: 1.5px solid var(--trazo); background: transparent; color: var(--tinta); }
 .texto { min-height: 44px; padding: 0 2px; border: 0; background: transparent; font-family: var(--titulo); font-weight: 600; font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tinta); text-decoration: underline; text-decoration-color: var(--trazo); text-underline-offset: 5px; transition: transform 140ms var(--ease-out), color 160ms ease; }
-.texto.peligro { color: var(--acento); text-decoration-color: oklch(0.48 0.14 36 / 0.4); }
+.texto.peligro { color: var(--peligro); text-decoration-color: oklch(0.5 0.18 27 / 0.4); }
 .icono-b { width: 44px; height: 44px; border-radius: 50%; border: 1.3px solid var(--trazo); background: transparent; display: grid; place-items: center; transition: transform 140ms var(--ease-out), background-color 160ms ease; }
 .primario:active:not(:disabled), .secundario:active:not(:disabled), .texto:active, .icono-b:active:not(:disabled) { transform: scale(0.97); }
 .primario:disabled, .secundario:disabled, .icono-b:disabled { opacity: 0.38; }
@@ -86,7 +88,7 @@ button:disabled { cursor: not-allowed; }
 textarea.entrada { padding: 12px 16px; min-height: 84px; resize: vertical; line-height: 1.35; }
 .entrada.num::placeholder { font-family: var(--cuerpo); font-weight: 400; font-size: 17px; letter-spacing: 0; }
 .entrada.num { font-family: var(--titulo); font-weight: 600; font-size: 20px; font-variant-numeric: tabular-nums; }
-.error { color: var(--acento); font-size: 15px; font-weight: 500; }
+.error { color: var(--peligro); font-size: 15px; font-weight: 500; }
 .nota { color: var(--tinta-2); font-size: 14px; }
 
 /* Segmento con lente */
@@ -125,12 +127,12 @@ html[data-letra="cantina"] .titulo { font-weight: 700; letter-spacing: 0; }
 /* ── Aviso ──────────────────────────────── */
 .toast { position: fixed; left: 50%; top: calc(10px + env(safe-area-inset-top)); z-index: 50; width: max-content; max-width: calc(100% - 32px); padding: 12px 20px; border-radius: 999px; font-weight: 500; font-size: 15px; text-align: center; opacity: 0; pointer-events: none; transform: translate(-50%, -10px); transition: opacity 150ms var(--ease-out), transform 150ms var(--ease-out); }
 .toast.on { opacity: 1; transform: translate(-50%, 0); transition-duration: 220ms; }
-.toast.error { color: var(--acento); }
+.toast.error { color: var(--peligro); }
 
 /* ── Entradas a escena ──────────────────── */
 .entra { animation: entra 240ms var(--ease-out) both; }
 @keyframes entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.escalon > * { animation: entra 420ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 50ms); }
+.escalon > * { animation: entra 320ms var(--ease-out) both; animation-delay: calc(min(var(--i, 0), 10) * 40ms); }
 
 @media (prefers-reduced-motion: reduce) {
   .entra, .escalon > * { animation-name: aparece; }
