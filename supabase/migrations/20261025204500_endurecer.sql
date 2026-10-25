@@ -57,20 +57,13 @@ begin
 end;
 $$;
 
--- Índices que cubren las llaves foráneas compuestas
-drop index if exists public.comandas_orden_idx;
-drop index if exists public.ordenes_mesa_idx;
-drop index if exists public.pagos_orden_idx;
-drop index if exists public.pagos_turno_idx;
-drop index if exists public.productos_cat_idx;
-drop index if exists public.renglones_comanda_idx;
-drop index if exists public.renglones_orden_idx;
-drop index if exists public.renglones_producto_idx;
-create index comandas_orden_idx on public.comandas (orden_id, restaurante_id);
-create index ordenes_mesa_idx on public.ordenes (mesa_id, restaurante_id);
-create index pagos_orden_idx on public.pagos (orden_id, restaurante_id);
-create index pagos_turno_idx on public.pagos (turno_id, restaurante_id);
-create index productos_cat_idx on public.productos (categoria_id, restaurante_id);
-create index renglones_comanda_idx on public.renglones (comanda_id, restaurante_id);
-create index renglones_orden_idx on public.renglones (orden_id, restaurante_id);
-create index renglones_producto_idx on public.renglones (producto_id, restaurante_id);
+-- Índices que cubren las llaves foráneas compuestas (los de una sola columna se quedan;
+-- se pueden quitar después desde el panel)
+create index if not exists comandas_orden_rest_idx on public.comandas (orden_id, restaurante_id);
+create index if not exists ordenes_mesa_rest_idx on public.ordenes (mesa_id, restaurante_id);
+create index if not exists pagos_orden_rest_idx on public.pagos (orden_id, restaurante_id);
+create index if not exists pagos_turno_rest_idx on public.pagos (turno_id, restaurante_id);
+create index if not exists productos_cat_rest_idx on public.productos (categoria_id, restaurante_id);
+create index if not exists renglones_comanda_rest_idx on public.renglones (comanda_id, restaurante_id);
+create index if not exists renglones_orden_rest_idx on public.renglones (orden_id, restaurante_id);
+create index if not exists renglones_producto_rest_idx on public.renglones (producto_id, restaurante_id);
