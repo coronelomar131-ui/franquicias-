@@ -20,7 +20,7 @@ Descripción de un video de otro producto de punto de venta para restaurantes. S
 | Cambio de estado de la mesa | Factura automática por código QR (conexión con el SAT) |
 | Dividir la cuenta y cerrar la mesa | Cobro con terminal bancaria |
 
-## Diseño y animación (decidido, no construido)
+## Diseño y animación (construido en `index.html`)
 
 - Misma identidad que Taller Digital: grafito, vidrio solo en lo que flota, Saira Condensed y Barlow, la comanda como papel de rollo que se imprime.
 - Pensada para tableta horizontal y para celular. Botones táctiles de al menos 44 px.
