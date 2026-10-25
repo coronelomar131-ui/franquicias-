@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useSesion } from "../estado/sesion";
+import { useEquipo } from "../estado/equipo";
 import type { Mesa, Orden } from "../lib/tipos";
 import type { Ruta } from "../lib/ruta";
 import { mensajeError, minutosDesde } from "../lib/formato";
@@ -11,6 +12,7 @@ import { Icono } from "../componentes/Icono";
 
 export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) => void }) {
   const avisar = useAviso();
+  const { modo, persona } = useEquipo();
   const [mesas, setMesas] = useState<Mesa[] | null>(null);
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
   const [sel, setSel] = useState<string | null>(null);
@@ -70,7 +72,7 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
     if (!mesaSel) return;
     setTrabajando(true);
     try {
-      const { data, error } = await supabase.from("ordenes").insert({ restaurante_id: rid, mesa_id: mesaSel.id, comensales }).select("id").single();
+      const { data, error } = await supabase.from("ordenes").insert({ restaurante_id: rid, mesa_id: mesaSel.id, comensales, abierta_por: persona?.id ?? null }).select("id").single();
       if (error) throw error;
       await cargarOrdenes();
       avisar(`Mesa ${mesaSel.nombre} abierta · ${comensales} ${comensales === 1 ? "comensal" : "comensales"}`);
@@ -103,14 +105,14 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
         {mesas.length > 0 && <p className="sub"><b>{ocupadas}</b> de {mesas.length} mesas ocupadas</p>}
       </div>
 
-      <PuestaAPunto rid={rid} mesas={mesas.length} ir={ir} />
+      {!modo && <PuestaAPunto rid={rid} mesas={mesas.length} ir={ir} />}
 
       {mesas.length === 0 ? (
         <div className="vacio-grande">
           <MesaDibujo forma="larga" lugares={6} />
           <strong>Tu salón está vacío</strong>
           <p>Dibuja tus mesas una vez, con su forma y sus lugares. Después aquí ves cuáles están libres y cuáles ocupadas.</p>
-          <button className="primario" type="button" onClick={() => ir("ajustes", "mesas")}>Agregar mesas</button>
+          {modo ? <p>Pídele al dueño que las agregue en Ajustes.</p> : <button className="primario" type="button" onClick={() => ir("ajustes", "mesas")}>Agregar mesas</button>}
         </div>
       ) : (
         <div className="plano">

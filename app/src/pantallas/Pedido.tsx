@@ -7,6 +7,7 @@ import { useAviso } from "../componentes/Aviso";
 import { MesaDibujo } from "../componentes/MesaDibujo";
 import { DobleToque, Segmento } from "../componentes/Controles";
 import { Icono } from "../componentes/Icono";
+import { useEquipo } from "../estado/equipo";
 
 const poco = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -30,6 +31,7 @@ function volarACocina(origen: HTMLElement | null) {
 
 export function Pedido({ rid, ordenId, ir }: { rid: string; ordenId: string; ir: (r: Ruta, param?: string) => void }) {
   const avisar = useAviso();
+  const { persona } = useEquipo();
   const [orden, setOrden] = useState<Orden | null>(null);
   const [mesa, setMesa] = useState<Mesa | null>(null);
   const [cats, setCats] = useState<Categoria[]>([]);
@@ -147,7 +149,7 @@ export function Pedido({ rid, ordenId, ir }: { rid: string; ordenId: string; ir:
     if (!cuantosNuevos || enviando) return;
     if (renglones.some((r) => r.id.startsWith("tmp-"))) { avisar("Un momento, terminando de guardar…"); return; }
     setEnviando(true);
-    const { error } = await supabase.rpc("enviar_a_cocina", { p_orden: ordenId });
+    const { error } = await supabase.rpc("enviar_a_cocina", { p_orden: ordenId, p_empleado: persona?.id ?? null });
     setEnviando(false);
     if (error) { avisar(mensajeError(error), "error"); return; }
     volarACocina(desde);

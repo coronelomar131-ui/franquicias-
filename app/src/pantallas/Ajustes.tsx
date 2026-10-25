@@ -7,12 +7,14 @@ import { Icono, type NombreIcono } from "../componentes/Icono";
 import { Negocio } from "./Negocio";
 import { Mesas } from "./Mesas";
 import { Equipo } from "./Equipo";
+import { ModoEquipo } from "./ModoEquipo";
 
-type Parte = "negocio" | "mesas" | "equipo";
+type Parte = "negocio" | "mesas" | "equipo" | "modo";
 const PARTES: { id: Parte; titulo: string; icono: NombreIcono }[] = [
   { id: "negocio", titulo: "Mi negocio", icono: "tienda" },
   { id: "mesas", titulo: "Mesas", icono: "mesa" },
   { id: "equipo", titulo: "Equipo", icono: "equipo" },
+  { id: "modo", titulo: "Modo equipo", icono: "candado" },
 ];
 
 export function Ajustes({ rid, parte, ir }: { rid: string; parte: string | null; ir: (r: Ruta, param?: string) => void }) {
@@ -24,6 +26,7 @@ export function Ajustes({ rid, parte, ir }: { rid: string; parte: string | null;
       {p.id === "negocio" && <Negocio rid={rid} />}
       {p.id === "mesas" && <Mesas rid={rid} />}
       {p.id === "equipo" && <Equipo rid={rid} />}
+      {p.id === "modo" && <ModoEquipo rid={rid} ir={ir} />}
     </div>
   );
 }
@@ -47,6 +50,7 @@ function Indice({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) => voi
     negocio: `${actual?.logo_url ? "Con logo" : "Sin logo"} · ${color} · Letra ${letra}`,
     mesas: cuentas ? (cuentas.mesas ? `${cuentas.mesas} ${cuentas.mesas === 1 ? "mesa" : "mesas"} en el salón` : "Todavía no hay mesas") : " ",
     equipo: cuentas ? (cuentas.equipo ? `${cuentas.equipo} ${cuentas.equipo === 1 ? "persona" : "personas"} con PIN` : "Nadie dado de alta") : " ",
+    modo: "Que tus meseros entren con su PIN en esta tableta",
   };
 
   return (
