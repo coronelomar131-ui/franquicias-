@@ -1,0 +1,189 @@
+/* ── Dibujo de mesa ───────────────────────── */
+.mesa-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.cubierta { fill: var(--e-libre); stroke: var(--tinta); stroke-width: 1.6; transition: fill 280ms ease; }
+[data-estado="ocupada"] .cubierta { fill: var(--e-ocupada); }
+.silla .s-v { fill: var(--papel); stroke: var(--trazo); stroke-width: 1.3; }
+.silla .s-l { fill: var(--tinta); opacity: 0; transform: scale(0.8); transform-box: fill-box; transform-origin: center; transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out); transition-delay: calc(var(--i) * 60ms); }
+.silla.ocupada .s-l { opacity: 1; transform: none; }
+.silla.activa .s-l { fill: var(--acento); }
+/* El comensal se sienta: llega un poco después que su silla y cae suave en su lugar */
+.silla .cabeza { fill: var(--tinta-2); opacity: 0; transform: translateY(-5px) scale(0.85); transform-box: fill-box; transform-origin: center; transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out); transition-delay: calc(var(--i) * 60ms + 90ms); }
+.silla.ocupada .cabeza { opacity: 1; transform: none; }
+.silla text { font-family: var(--titulo); font-weight: 700; font-size: 8.5px; fill: var(--sobre-acento); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+
+/* ── Carga ────────────────────────────────── */
+.cargando { min-height: 100dvh; display: grid; place-items: center; }
+.cargando .mesa-svg { width: 120px; }
+.cargando .s-l, .cargando .cabeza { animation: respira 1.4s ease-in-out infinite alternate; animation-delay: calc(var(--i) * 140ms); }
+@keyframes respira { from { opacity: 0.25; } to { opacity: 1; } }
+
+/* ── Entrar ───────────────────────────────── */
+.entrar { min-height: 100dvh; display: grid; align-content: start; }
+.entrar-portada { position: relative; padding: calc(22px + env(safe-area-inset-top)) var(--m) 8px; display: grid; gap: 8px; }
+.entrar-mesa { width: min(42vw, 200px); justify-self: end; margin-top: -10px; }
+.entrar-lema { font-family: var(--titulo); font-weight: 500; font-size: 20px; line-height: 1.1; color: var(--tinta-2); }
+.entrar-forma { padding: 18px var(--m) 40px; display: grid; gap: 20px; max-width: 520px; }
+.pila { display: grid; gap: 16px; }
+.nota-ok { padding: 12px 14px; border-radius: 12px; background: oklch(0.84 0.07 150 / 0.35); color: var(--tinta); font-size: 15px; }
+@media (min-width: 900px) {
+  .entrar { grid-template-columns: 1fr 1fr; align-content: stretch; }
+  .entrar-portada { align-content: space-between; padding: 40px; background-image: linear-gradient(var(--cuadro) 1px, transparent 1px), linear-gradient(90deg, var(--cuadro) 1px, transparent 1px); background-size: 22px 22px; border-right: 1.5px solid var(--trazo); }
+  .entrar-mesa { width: min(70%, 380px); justify-self: center; margin: 0; }
+  .entrar-lema { font-size: 34px; }
+  .entrar-forma { align-content: center; padding: 40px 56px; }
+}
+
+/* ── Alta de restaurante ──────────────────── */
+.alta { max-width: 560px; padding: calc(32px + env(safe-area-inset-top)) var(--m) 48px; display: grid; gap: 22px; }
+.alta-pie { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+
+/* ── Marco: cabecera, vista y dock ────────── */
+.marco { min-height: 100dvh; }
+.cab { display: flex; align-items: center; gap: 12px; padding: calc(12px + env(safe-area-inset-top)) var(--m) 0; max-width: var(--ancho); margin: 0 auto; }
+.cab-nombre, .cab-rest select { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--titulo); font-weight: 600; font-size: 15px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--tinta-2); }
+.cab-rest select { appearance: none; border: 0; background: transparent; padding: 10px 18px 10px 0; background-image: linear-gradient(45deg, transparent 50%, var(--tinta-2) 50%), linear-gradient(135deg, var(--tinta-2) 50%, transparent 50%); background-position: right 6px center, right 1px center; background-size: 5px 5px; background-repeat: no-repeat; max-width: 70vw; }
+.cab-salir { margin-left: auto; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: var(--tinta-2); display: grid; place-items: center; transition: transform 140ms var(--ease-out); }
+.cab-salir:active { transform: scale(0.94); }
+.vista { max-width: var(--ancho); margin: 0 auto; padding: 0 0 calc(130px + env(safe-area-inset-bottom)); }
+.encabezado { padding: 14px var(--m) 0; display: grid; gap: 8px; }
+.dock { position: fixed; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 20; width: min(440px, calc(100% - 24px)); height: 64px; padding: 6px; border-radius: 32px; display: grid; grid-template-columns: repeat(4, 1fr); transform: translateX(-50%); }
+.lente { position: absolute; left: 6px; top: 6px; bottom: 6px; width: calc((100% - 12px) / 4); border-radius: 26px; pointer-events: none; background: var(--tinta); box-shadow: 0 4px 12px oklch(0.25 0.02 60 / 0.3); transition: transform 280ms var(--ease-cajon); }
+.pestana { position: relative; z-index: 1; border: 0; background: transparent; border-radius: 26px; display: grid; justify-items: center; align-content: center; gap: 1px; color: var(--tinta-2); font-family: var(--titulo); font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; transition: color 200ms ease, transform 140ms var(--ease-out); }
+.pestana:active { transform: scale(0.96); }
+.pestana[aria-current="page"] { color: var(--papel); }
+
+/* ── Salón ────────────────────────────────── */
+.plano {
+  position: relative; margin: 22px var(--m) 0; padding: 40px 10px 50px; border: 1.5px solid var(--trazo); border-radius: 3px;
+  background-image: linear-gradient(var(--cuadro) 1px, transparent 1px), linear-gradient(90deg, var(--cuadro) 1px, transparent 1px);
+  background-size: 22px 22px; background-position: -1px -1px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px 8px;
+}
+.plano-nota { position: absolute; font-family: var(--titulo); font-weight: 600; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tinta-3); }
+.plano-nota.pase { top: -8px; left: 22px; padding: 0 8px; background: var(--papel); }
+.plano-nota.escala { bottom: 14px; left: 14px; display: flex; align-items: center; gap: 6px; letter-spacing: 0.12em; }
+.plano-nota.escala i { width: 44px; height: 6px; border: 1.3px solid var(--trazo); border-top: 0; }
+.mesa { position: relative; display: grid; justify-items: center; align-content: start; gap: 4px; padding: 6px 2px 8px; border: 0; background: transparent; border-radius: 12px; text-align: center; transition: transform 140ms var(--ease-out); animation: entra 460ms var(--ease-out) both; animation-delay: calc(var(--i) * 45ms); }
+.mesa:active { transform: scale(0.97); }
+.mesa.larga { grid-column: span 2; }
+.dib { position: relative; display: block; width: 100%; max-width: 128px; }
+.mesa.larga .dib, .mesa-ficha.larga .dib { max-width: 220px; }
+.num { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--titulo); font-weight: 700; font-size: clamp(22px, 6.5vw, 30px); color: var(--tinta); pointer-events: none; }
+.mesa .pie, .mesa-ficha .pie { display: grid; gap: 1px; line-height: 1.15; }
+.mesa .pie b { font-family: var(--titulo); font-weight: 600; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; }
+.mesa .pie span, .mesa-ficha .pie span { font-size: 14px; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.mesa[aria-pressed="true"] .dib::after, .mesa-ficha[aria-pressed="true"] .dib::after, .mesa-ficha.agregar[aria-pressed="true"] .mas-grande { outline: 1.5px dashed var(--acento); outline-offset: 6px; }
+.mesa[aria-pressed="true"] .dib::after, .mesa-ficha[aria-pressed="true"] .dib::after { content: ""; position: absolute; inset: 0; border-radius: 14px; }
+/* Cuando la mesa se ocupa (aquí o en otro aparato) suelta un anillo suave */
+.mesa.recien .dib::before { content: ""; position: absolute; inset: 8%; border-radius: 50%; border: 2px solid var(--e-ocupada); pointer-events: none; animation: anillo 640ms var(--ease-out) both; }
+@keyframes anillo { from { opacity: 0.95; transform: scale(0.88); } to { opacity: 0; transform: scale(1.2); } }
+.leyenda { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 16px var(--m) 0; margin: 0; }
+.leyenda li { display: flex; align-items: center; gap: 7px; font-family: var(--titulo); font-weight: 600; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--tinta-2); }
+.leyenda i { width: 14px; height: 14px; border-radius: 3px; border: 1.3px solid var(--tinta); }
+.hoja { position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom)); z-index: 15; width: min(520px, calc(100% - 24px)); transform: translateX(-50%); border-radius: 24px; padding: 16px 18px 18px; display: grid; gap: 12px; }
+.hoja.entra { animation-name: hoja-sube; animation-duration: 260ms; }
+@keyframes hoja-sube { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.hoja-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.hoja-cab h2 { font-family: var(--titulo); font-weight: 500; font-size: 36px; line-height: 0.95; }
+.hoja-dato { font-size: 16px; color: var(--tinta-2); }
+.hoja-dato b { font-family: var(--titulo); font-weight: 700; font-size: 20px; color: var(--tinta); font-variant-numeric: tabular-nums; }
+.hoja-abrir { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.hoja-abrir .primario { flex: 1 1 160px; }
+.vacio-grande { display: grid; justify-items: start; gap: 10px; margin: 26px var(--m) 0; padding: 26px 22px; border: 1.5px dashed var(--trazo); border-radius: 18px; max-width: 560px; }
+.vacio-grande .mesa-svg { width: 180px; }
+.vacio-grande strong { font-family: var(--titulo); font-weight: 600; font-size: 28px; line-height: 1; }
+.vacio-grande p { color: var(--tinta-2); max-width: 46ch; }
+
+/* ── Sellos ───────────────────────────────── */
+.sello-mini { display: inline-block; margin-left: 8px; padding: 1px 7px 0; border: 1.5px solid var(--acento); border-radius: 3px; color: var(--acento); font-family: var(--titulo); font-weight: 700; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; transform: rotate(-3deg); vertical-align: middle; }
+
+/* ── Editor en línea (sin ventanas encima) ── */
+.editor { display: grid; gap: 14px; margin: 10px 0 14px; padding: 18px; border-radius: 18px; background: var(--papel-2); border: 1px solid var(--linea); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.5); }
+.editor-fila { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+.editor-fila .crece { flex: 1 1 220px; }
+.editor-fila .precio { flex: 0 1 130px; }
+.editor-acc { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.editor-extra { margin-left: auto; }
+select.entrada { appearance: none; padding-right: 36px; background-image: linear-gradient(45deg, transparent 50%, var(--tinta-2) 50%), linear-gradient(135deg, var(--tinta-2) 50%, transparent 50%); background-position: right 18px center, right 13px center; background-size: 5px 5px; background-repeat: no-repeat; }
+.interruptor { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; font-weight: 500; }
+.interruptor input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.interruptor .riel { position: relative; width: 48px; height: 28px; border-radius: 14px; background: var(--papel-3); border: 1.5px solid var(--trazo); transition: background-color 180ms ease, border-color 180ms ease; }
+.interruptor .riel i { position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; border-radius: 50%; background: var(--papel); box-shadow: 0 1px 3px oklch(0.25 0.02 60 / 0.35); transition: transform 200ms var(--ease-out); }
+.interruptor input:checked + .riel { background: var(--tinta); border-color: var(--tinta); }
+.interruptor input:checked + .riel i { transform: translateX(20px); }
+.interruptor input:focus-visible + .riel { outline: 2px solid var(--acento); outline-offset: 3px; }
+
+/* ── Menú como carta ──────────────────────── */
+.indice { display: flex; gap: 2px; overflow-x: auto; padding: 14px calc(var(--m) - 10px) 0; scrollbar-width: none; }
+.indice::-webkit-scrollbar { display: none; }
+.indice a { flex: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; font-family: var(--titulo); font-weight: 600; font-size: 17px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--tinta-3); text-decoration: none; transition: color 160ms ease; }
+.carta { padding: 8px var(--m) 0; max-width: 860px; }
+.seccion { margin-top: 26px; scroll-margin-top: 16px; }
+.seccion.apagada .platos { opacity: 0.55; }
+.seccion-cab { display: flex; align-items: center; gap: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--tinta); }
+.seccion-cab h2 { font-family: var(--titulo); font-weight: 500; font-size: clamp(30px, 8vw, 42px); line-height: 1; letter-spacing: -0.005em; }
+.seccion-acc { margin-left: auto; display: flex; gap: 6px; }
+.platos { list-style: none; padding: 0; margin: 0; }
+.plato { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "nom puntos precio" "desc desc desc"; align-items: baseline; column-gap: 8px; row-gap: 2px; width: 100%; min-height: 56px; padding: 12px 4px; border: 0; border-bottom: 1px solid var(--linea); background: transparent; text-align: left; border-radius: 4px; transition: background-color 160ms ease, transform 120ms var(--ease-out); }
+.plato:active { transform: scale(0.99); }
+.plato-nom { grid-area: nom; font-family: var(--titulo); font-weight: 600; font-size: 22px; line-height: 1.1; }
+.puntos { grid-area: puntos; align-self: end; margin-bottom: 6px; height: 2px; background-image: radial-gradient(circle, var(--trazo) 1px, transparent 1.4px); background-size: 7px 2px; background-repeat: repeat-x; }
+.plato-precio { grid-area: precio; font-family: var(--titulo); font-weight: 700; font-size: 22px; font-variant-numeric: tabular-nums; }
+.plato-desc { grid-area: desc; font-size: 14px; color: var(--tinta-2); }
+li.apagado .plato-nom, li.apagado .plato-precio { color: var(--tinta-3); }
+.agregar-fila { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 52px; padding: 0 4px; border: 0; background: transparent; font-family: var(--titulo); font-weight: 600; font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tinta-2); border-radius: 4px; transition: color 160ms ease, transform 120ms var(--ease-out); }
+.agregar-fila:active { transform: scale(0.99); }
+.agregar-cat { margin-top: 26px; }
+@media (hover: hover) and (pointer: fine) {
+  .plato:hover { background: oklch(0.25 0.02 60 / 0.035); }
+  .agregar-fila:hover, .indice a:hover { color: var(--tinta); }
+  .mesa:hover .cubierta, .mesa-ficha:hover .cubierta { stroke-width: 2.2; }
+  .gafete:hover { border-color: var(--tinta-2); }
+}
+
+/* ── Mesas ────────────────────────────────── */
+.rejilla-mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px 8px; padding: 18px var(--m) 0; }
+.mesa-ficha { display: grid; justify-items: center; align-content: start; gap: 4px; padding: 8px 4px 10px; border: 0; background: transparent; border-radius: 12px; transition: transform 140ms var(--ease-out); animation: entra 420ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 40ms); }
+.mesa-ficha:active { transform: scale(0.97); }
+.mesa-ficha.larga { grid-column: span 2; }
+.mesa-ficha.apagada .dib { opacity: 0.45; }
+.mesa-ficha .pie { display: flex; align-items: center; justify-content: center; }
+.mas-grande { display: grid; place-items: center; width: 88px; height: 88px; margin: 14px 0; border-radius: 16px; border: 1.5px dashed var(--trazo); color: var(--tinta-2); }
+.editor-mesa { margin: 18px var(--m) 0; grid-template-columns: 1fr; }
+.editor-mesa-dib { justify-self: center; width: min(60vw, 230px); }
+.editor-mesa-dib.larga { width: min(84vw, 380px); }
+.nombre-mesa { flex: 1 1 140px; }
+@media (min-width: 760px) { .editor-mesa { grid-template-columns: minmax(220px, 0.8fr) 1fr; align-items: center; gap: 28px; } }
+
+/* ── Equipo: gafetes ──────────────────────── */
+.gafetes { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; padding: 18px var(--m) 0; margin: 0; }
+.gafetes > li { animation: entra 420ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 40ms); }
+.gafete { position: relative; display: grid; grid-template-columns: 48px 1fr auto; grid-template-areas: "ini nom rol"; align-items: center; gap: 12px; width: 100%; min-height: 72px; padding: 12px 14px; border: 1.5px solid var(--trazo); border-radius: 16px; background: var(--ticket); text-align: left; transition: transform 140ms var(--ease-out), border-color 160ms ease; }
+.gafete::before { content: ""; position: absolute; top: -1.5px; left: 50%; width: 34px; height: 6px; transform: translateX(-50%); border-radius: 0 0 4px 4px; background: var(--papel-3); border: 1.5px solid var(--trazo); border-top: 0; }
+.gafete:active { transform: scale(0.98); }
+.gafete[aria-pressed="true"] { border-color: var(--tinta); box-shadow: 0 0 0 3px var(--acento-suave); }
+.gafete.apagado { opacity: 0.55; }
+.gafete.agregar { border-style: dashed; background: transparent; }
+.gafete-ini { grid-area: ini; width: 48px; height: 48px; border-radius: 50%; background: var(--tinta); color: var(--papel); display: grid; place-items: center; font-family: var(--titulo); font-weight: 700; font-size: 22px; }
+.gafete.agregar .gafete-ini { background: transparent; color: var(--tinta-2); border: 1.5px dashed var(--trazo); }
+.gafete-nom { grid-area: nom; font-family: var(--titulo); font-weight: 600; font-size: 21px; line-height: 1.1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.gafete-rol { grid-area: rol; padding: 3px 9px 2px; border-radius: 999px; font-family: var(--titulo); font-weight: 700; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; border: 1.3px solid var(--tinta); }
+.gafete-rol.mesero { background: var(--e-libre); }
+.gafete-rol.cocina { background: var(--e-ocupada); }
+.gafete-rol.caja { background: var(--e-comiendo); }
+.gafete-rol.gerente { background: var(--tinta); color: var(--papel); }
+.equipo .editor { margin: 16px var(--m) 0; max-width: 620px; }
+.entrada.pin { letter-spacing: 0.4em; }
+
+@media (min-width: 960px) {
+  .titulo { font-size: clamp(46px, 5vw, 76px); }
+  .plano { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mesa, .mesa-ficha, .gafetes > li { animation-name: aparece; }
+  .silla .s-l, .silla .cabeza { transform: none; transition-delay: 0ms; }
+  .mesa.recien .dib::before { animation: none; }
+  .hoja.entra { animation-name: aparece; }
+  .lente { transition-duration: 1ms; }
+  .cargando .s-l, .cargando .cabeza { animation: none; opacity: 1; }
+}

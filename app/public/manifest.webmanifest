@@ -1,0 +1,2 @@
+{ "name": "Comandero", "short_name": "Comandero", "start_url": "/", "display": "standalone", "background_color": "#f4efe6", "theme_color": "#f4efe6", "lang": "es-MX",
+  "icons": [{ "src": "/icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }] }
