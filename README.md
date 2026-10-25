@@ -5,7 +5,7 @@ Línea de trabajo para restaurantes y fondas de CDMX, separada de la de refaccio
 ## Estado (25 de octubre de 2026)
 
 - Clientes: ninguno. Conversaciones con dueños: ninguna todavía.
-- **Demo de mesas y comandas: construida** (`index.html`, un solo archivo que funciona sin internet). Datos de ejemplo.
+- **Comandero (app real)**: en `app/`, conectada a Supabase. La demo de un solo archivo se retiró.
 - La libreta de prospectos y el cotizador siguen publicados desde `repo-negocio-`, ya con guion, preguntas y mensaje para restaurantes.
 - Hipótesis sin verificar: que los restaurantes chicos (fondas, taquerías, cafeterías) llevan hoy mesas y cuentas en libreta o WhatsApp. Solo se confirma hablando con dueños.
 
