@@ -56,7 +56,7 @@ export function Mesas({ rid }: { rid: string }) {
         {mesas.map((m, i) => (
           <button key={m.id} type="button" className={"mesa-ficha " + m.forma + (m.activa ? "" : " apagada")} aria-pressed={sel === m.id} style={{ ["--i" as string]: i }}
             onClick={() => setSel(sel === m.id ? null : m.id)} aria-label={`Editar mesa ${m.nombre}, ${m.forma}, ${m.lugares} lugares${m.activa ? "" : ", fuera de servicio"}`}>
-            <span className="dib"><MesaDibujo forma={m.forma} lugares={m.lugares} /><span className="num" translate="no">{m.nombre}</span></span>
+            <span className="dib"><MesaDibujo forma={m.forma} lugares={m.lugares} /><span className="num-mesa" translate="no">{m.nombre}</span></span>
             <span className="pie"><span>{m.lugares} lugares</span>{!m.activa && <span className="sello-mini">Fuera</span>}</span>
           </button>
         ))}

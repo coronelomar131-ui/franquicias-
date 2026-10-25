@@ -2,7 +2,12 @@ export type Forma = "cuadrada" | "redonda" | "larga";
 export type Rol = "gerente" | "mesero" | "cocina" | "caja";
 
 export type ColorMarca = "achiote" | "vino" | "nopal" | "talavera" | "mostaza" | "rosa" | "tinta";
-export interface Restaurante { id: string; nombre: string; zona_horaria: string; logo_url: string | null; color_marca: ColorMarca; }
+export type Tipografia = "fonda" | "bistro" | "moderna" | "cantina";
+export type Fondo = "crema" | "blanco" | "arena" | "salvia";
+export interface Restaurante {
+  id: string; nombre: string; zona_horaria: string; logo_url: string | null;
+  color_marca: ColorMarca; tipografia: Tipografia; fondo: Fondo; eslogan: string;
+}
 export interface Categoria { id: string; restaurante_id: string; nombre: string; orden: number; activa: boolean; }
 export interface Producto {
   id: string; restaurante_id: string; categoria_id: string | null; nombre: string; descripcion: string;

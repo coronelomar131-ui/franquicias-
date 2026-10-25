@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { conTeclado } from "../lib/dispositivo";
 import { supabase } from "../lib/supabase";
 import type { Empleado, Rol } from "../lib/tipos";
 import { mensajeError } from "../lib/formato";
@@ -83,7 +84,7 @@ function EditorEmpleado({ inicial, onGuardar, onCancelar }: { inicial?: Empleado
   return (
     <form className="editor entra" onSubmit={enviar}>
       <label className="campo"><span>Nombre</span>
-        <input className="entrada" autoFocus maxLength={60} required value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="off" name="nombre-empleado" placeholder="Como lo conocen en el restaurante" />
+        <input className="entrada" autoFocus={conTeclado} maxLength={60} required value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="off" name="nombre-empleado" placeholder="Como lo conocen en el restaurante" />
       </label>
       <div className="campo"><span>Puesto</span>
         <Segmento etiqueta="Puesto" valor={rol} onCambio={setRol} opciones={ROLES.map((r) => ({ id: r.id, texto: r.texto }))} />
