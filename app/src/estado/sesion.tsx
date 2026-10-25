@@ -30,7 +30,7 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
   const [actualId, setActualId] = useState<string | null>(leer());
 
   const recargar = useCallback(async () => {
-    const { data, error } = await supabase.from("restaurantes").select("id, nombre, zona_horaria").order("creado_en");
+    const { data, error } = await supabase.from("restaurantes").select("id, nombre, zona_horaria, logo_url, color_marca").order("creado_en");
     if (error) throw error;
     setRestaurantes(data ?? []);
     setActualId((id) => (data?.some((r) => r.id === id) ? id : data?.[0]?.id ?? null));

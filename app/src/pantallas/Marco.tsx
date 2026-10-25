@@ -1,20 +1,30 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useSesion } from "../estado/sesion";
 import type { Ruta } from "../lib/ruta";
+import { aplicarMarca } from "../lib/marca";
 import { Icono, type NombreIcono } from "../componentes/Icono";
 
-const PESTANAS: { id: Exclude<Ruta, "nuevo">; texto: string; icono: NombreIcono }[] = [
+const PESTANAS: { id: Ruta; texto: string; icono: NombreIcono }[] = [
   { id: "salon", texto: "Salón", icono: "salon" },
+  { id: "cocina", texto: "Cocina", icono: "cocina" },
   { id: "menu", texto: "Menú", icono: "menu" },
-  { id: "mesas", texto: "Mesas", icono: "mesa" },
-  { id: "equipo", texto: "Equipo", icono: "equipo" },
+  { id: "ajustes", texto: "Ajustes", icono: "ajustes" },
 ];
 
 export function Marco({ ruta, ir, children }: { ruta: Ruta; ir: (r: Ruta) => void; children: ReactNode }) {
   const { actual, restaurantes, elegir, salir } = useSesion();
-  const i = Math.max(0, PESTANAS.findIndex((p) => p.id === ruta));
+  const activa = ruta === "pedido" ? "salon" : ruta;
+  const i = Math.max(0, PESTANAS.findIndex((p) => p.id === activa));
   const principal = useRef<HTMLElement>(null);
   const primera = useRef(true);
+
+  useEffect(() => { aplicarMarca(actual?.color_marca); }, [actual?.color_marca]);
+  useEffect(() => {
+    const cocina = ruta === "cocina";
+    document.documentElement.dataset.tema = cocina ? "cocina" : "";
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", cocina ? "#1f2227" : "#f4efe6");
+    return () => { document.documentElement.dataset.tema = ""; };
+  }, [ruta]);
   useEffect(() => {
     if (primera.current) { primera.current = false; return; }
     window.scrollTo(0, 0);
@@ -24,6 +34,7 @@ export function Marco({ ruta, ir, children }: { ruta: Ruta; ir: (r: Ruta) => voi
   return (
     <div className="marco">
       <header className="cab">
+        {actual?.logo_url && <img className="cab-logo" src={actual.logo_url} alt="" width={36} height={36} />}
         {restaurantes.length > 1 ? (
           <label className="cab-rest">
             <span className="sr-only">Restaurante</span>
@@ -39,7 +50,7 @@ export function Marco({ ruta, ir, children }: { ruta: Ruta; ir: (r: Ruta) => voi
       <nav className="dock vidrio" aria-label="Secciones">
         <span className="lente" style={{ transform: `translateX(${i * 100}%)` }} aria-hidden="true" />
         {PESTANAS.map((p) => (
-          <button key={p.id} type="button" className="pestana" aria-current={p.id === ruta ? "page" : undefined} onClick={() => ir(p.id)}>
+          <button key={p.id} type="button" className="pestana" aria-current={p.id === activa ? "page" : undefined} onClick={() => ir(p.id)}>
             <Icono n={p.icono} tam={20} /><span>{p.texto}</span>
           </button>
         ))}

@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
 
-export type Ruta = "salon" | "menu" | "mesas" | "equipo" | "nuevo";
-const VALIDAS: Ruta[] = ["salon", "menu", "mesas", "equipo", "nuevo"];
-const leer = (): Ruta => { const r = location.hash.replace(/^#\/?/, "") as Ruta; return VALIDAS.includes(r) ? r : "salon"; };
+export type Ruta = "salon" | "cocina" | "menu" | "ajustes" | "nuevo" | "pedido";
+const VALIDAS: Ruta[] = ["salon", "cocina", "menu", "ajustes", "nuevo", "pedido"];
+export interface Lugar { ruta: Ruta; param: string | null; }
 
-export function useRuta(): [Ruta, (r: Ruta) => void] {
-  const [ruta, setRuta] = useState<Ruta>(leer);
-  useEffect(() => { const f = () => setRuta(leer()); addEventListener("hashchange", f); return () => removeEventListener("hashchange", f); }, []);
-  return [ruta, (r) => { if (r !== ruta) location.hash = "/" + r; }];
+function leer(): Lugar {
+  const [r, p] = location.hash.replace(/^#\/?/, "").split("/");
+  const ruta = VALIDAS.includes(r as Ruta) ? (r as Ruta) : "salon";
+  if (ruta === "pedido" && !p) return { ruta: "salon", param: null };
+  return { ruta, param: p ? decodeURIComponent(p) : null };
+}
+
+export function useRuta(): [Lugar, (r: Ruta, param?: string) => void] {
+  const [lugar, setLugar] = useState<Lugar>(leer);
+  useEffect(() => { const f = () => setLugar(leer()); addEventListener("hashchange", f); return () => removeEventListener("hashchange", f); }, []);
+  return [lugar, (r, param) => { location.hash = "/" + r + (param ? "/" + encodeURIComponent(param) : ""); }];
 }
