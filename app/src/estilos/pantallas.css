@@ -219,7 +219,7 @@ html[data-tema="cocina"] .pestana[aria-current="page"] { color: var(--ticket-tin
 .comanda-k .lista { margin-top: 14px; width: 100%; min-height: 52px; border: 0; border-radius: 12px; background: var(--e-comiendo); color: var(--ticket-tinta); font-family: var(--titulo); font-weight: 700; font-size: 19px; letter-spacing: 0.1em; text-transform: uppercase; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.5), 0 6px 14px oklch(0 0 0 / 0.35); transition: transform 140ms var(--ease-out), opacity 160ms ease; }
 .comanda-k .lista:active:not(:disabled) { transform: scale(0.97); }
 .comanda-k .lista:disabled { opacity: 0.5; }
-.sello-k { position: absolute; right: 14px; top: 64px; padding: 3px 10px 1px; border: 2.5px solid oklch(0.45 0.1 150); border-radius: 4px; color: oklch(0.45 0.1 150); font-family: var(--titulo); font-weight: 700; font-size: 22px; letter-spacing: 0.14em; text-transform: uppercase; transform: rotate(-8deg); opacity: 0.9; animation: sellar 280ms var(--ease-out) both; pointer-events: none; }
+.sello-k { position: absolute; right: 18px; top: 104px; padding: 3px 10px 1px; border: 2.5px solid oklch(0.45 0.1 150); border-radius: 4px; color: oklch(0.45 0.1 150); font-family: var(--titulo); font-weight: 700; font-size: 22px; letter-spacing: 0.14em; text-transform: uppercase; transform: rotate(-8deg); opacity: 0.9; animation: sellar 280ms var(--ease-out) both; pointer-events: none; }
 @keyframes sellar { from { opacity: 0; transform: rotate(-14deg) scale(1.35); } 60% { opacity: 0.95; } to { opacity: 0.9; transform: rotate(-8deg) scale(1); } }
 .comanda-k.cuelga { animation: cuelga 380ms var(--ease-out) both; }
 @keyframes cuelga { from { opacity: 0; transform: translateY(-20px) rotate(-3deg); } 70% { opacity: 1; } to { opacity: 1; transform: none; } }
@@ -460,11 +460,11 @@ html[data-tema="cocina"] .pestana[aria-current="page"] { color: var(--ticket-tin
 .tecla.ok:active:not(:disabled) { background: var(--acento-hover, var(--acento)); }
 .tecla:disabled { opacity: 0.4; }
 
-.cab-persona { margin-left: auto; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 12px 4px 4px; border-radius: 999px; border: 1.3px solid var(--trazo); background: var(--ticket); color: var(--tinta); text-align: left; transition: transform 140ms var(--ease-out); }
+.cab-persona { margin-left: auto; flex: none; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 14px 4px 4px; border-radius: 999px; border: 1.3px solid var(--trazo); background: var(--papel-2); color: var(--tinta); text-align: left; transition: transform 140ms var(--ease-out); }
 .cab-persona:active { transform: scale(0.97); }
 .cab-persona .cara-ini { width: 34px; height: 34px; margin: 0; font-size: 17px; }
 .cab-persona-txt { display: grid; line-height: 1.05; }
-.cab-persona-txt b { font-weight: 600; font-size: 15px; max-width: 38vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cab-persona-txt b { font-weight: 600; font-size: 15px; max-width: 28vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cab-persona-txt small { font-size: 12px; color: var(--tinta-2); }
 
 .que-ve { list-style: none; margin: 20px var(--m) 0; padding: 0; max-width: 620px; border-radius: 18px; background: var(--ticket); border: 1px solid var(--linea); }
@@ -534,3 +534,6 @@ html[data-tema="cocina"] .pestana[aria-current="page"] { color: var(--ticket-tin
 
 .codigo-caja { display: grid; justify-items: center; gap: 6px; margin: 20px var(--m) 0; max-width: 620px; padding: 22px 16px 10px; border-radius: 18px; background: var(--ticket); border: 1.5px dashed var(--trazo); text-align: center; }
 .codigo-grande { font-family: var(--titulo); font-weight: 700; font-size: clamp(44px, 13vw, 64px); line-height: 1; letter-spacing: 0.18em; padding-left: 0.18em; font-variant-numeric: tabular-nums; color: var(--tinta); }
+
+.editor-acc .mover { display: inline-flex; gap: 8px; }
+html[data-tema="cocina"] .cab-persona { background: oklch(1 0 0 / 0.08); }

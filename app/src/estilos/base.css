@@ -128,6 +128,9 @@ html[data-letra="cantina"] .titulo { font-weight: 700; letter-spacing: 0; }
 /* ── Aviso ──────────────────────────────── */
 .toast { position: fixed; left: 50%; top: calc(10px + env(safe-area-inset-top)); z-index: 50; width: max-content; max-width: calc(100% - 32px); padding: 12px 20px; border-radius: 999px; font-weight: 500; font-size: 15px; text-align: center; opacity: 0; pointer-events: none; transform: translate(-50%, -10px); transition: opacity 150ms var(--ease-out), transform 150ms var(--ease-out); }
 .toast.on { opacity: 1; transform: translate(-50%, 0); transition-duration: 220ms; }
+/* El aviso va sobre la cabecera: casi opaco para que no se transparente el texto de atrás */
+.toast.vidrio { background: oklch(0.985 0.01 85 / 0.96); }
+html[data-tema="cocina"] .toast.vidrio { background: oklch(0.27 0.01 250 / 0.97); color: var(--tinta); }
 .toast.error { color: var(--peligro); }
 
 /* ── Entradas a escena ──────────────────── */

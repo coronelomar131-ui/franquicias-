@@ -91,7 +91,7 @@ export function Marco({ lugar, ir, children }: { lugar: Lugar; ir: (r: Ruta, par
         {modo && persona ? (
           <button className="cab-persona" type="button" onClick={soltar} aria-label={`${persona.nombre}. Cambiar de persona`}>
             <Cara nombre={persona.nombre} foto={persona.foto_url} />
-            <span className="cab-persona-txt"><b>{persona.nombre}</b><small>Cambiar</small></span>
+            <span className="cab-persona-txt"><b>{persona.nombre.trim().split(/\s+/)[0]}</b><small>Cambiar</small></span>
           </button>
         ) : <button className="cab-salir" type="button" onClick={salir} aria-label="Cerrar sesión"><Icono n="salir" tam={20} /></button>}
       </header>
