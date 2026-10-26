@@ -101,6 +101,7 @@ export function Pedido({ rid, ordenId, ir }: { rid: string; ordenId: string; ir:
   const cuantosNuevos = nuevos.reduce((s, r) => s + r.cantidad, 0);
   const total = renglones.reduce((s, r) => s + r.precio_centavos * r.cantidad, 0);
   const totalNuevos = nuevos.reduce((s, r) => s + r.precio_centavos * r.cantidad, 0);
+  const porCobrar = renglones.filter((r) => !r.pagado).reduce((s, r) => s + r.precio_centavos * r.cantidad, 0);
   const cuantos = (c: number) => renglones.filter((r) => r.comensal === c).reduce((s, r) => s + r.cantidad, 0);
   const llevaEste = (pid: string) => renglones.filter((r) => r.producto_id === pid && r.comensal === com).reduce((s, r) => s + r.cantidad, 0);
   const estadoComanda = (id: string | null) => comandas.find((c) => c.id === id)?.estado;
@@ -241,7 +242,7 @@ export function Pedido({ rid, ordenId, ir }: { rid: string; ordenId: string; ir:
                       <span className="nom">{r.nombre}</span>
                       <span className="imp">{pesos(r.precio_centavos * r.cantidad)}</span>
                       {r.comanda_id
-                        ? <span className="tag">{estadoComanda(r.comanda_id) === "lista" ? "Lista" : "En cocina"}</span>
+                        ? <span className={"tag" + (r.pagado ? " pagada" : "")}>{r.pagado ? "Pagado" : estadoComanda(r.comanda_id) === "lista" ? "Lista" : "En cocina"}</span>
                         : <button type="button" className="quitar" onClick={() => quitar(r)} aria-label={`Quitar un ${r.nombre} del comensal ${n}`} disabled={r.id.startsWith("tmp-")}><Icono n="menos" /></button>}
                     </div>
                   ))}
@@ -249,12 +250,15 @@ export function Pedido({ rid, ordenId, ir }: { rid: string; ordenId: string; ir:
               );
             })}
             <div className="total-com"><span>Total</span><strong>{pesos(total)}</strong></div>
+            {porCobrar > 0 && porCobrar < total && <div className="total-com por-cobrar"><span>Falta por cobrar</span><strong>{pesos(porCobrar)}</strong></div>}
             <div className="acciones">
               <button ref={botonEnviar} className="primario" type="button" disabled={!cuantosNuevos || enviando} onClick={() => enviar(botonEnviar.current)}>
                 <Icono n="enviar" tam={20} />{enviando ? "Enviando…" : cuantosNuevos ? `Mandar a cocina · ${cuantosNuevos}` : "Mandar a cocina"}
               </button>
+              {porCobrar > 0 && !cuantosNuevos && (
+                <button className="primario cobrar-pedido" type="button" onClick={() => ir("cobro", ordenId)}><Icono n="caja" tam={20} />Cobrar · {pesos(porCobrar)}</button>
+              )}
               {comandas.length === 0 && <DobleToque texto="Liberar mesa" pregunta="¿Liberar? Toca otra vez" onConfirmar={liberar} />}
-              <p className="nota">El cobro y el ticket llegan en la siguiente entrega.</p>
             </div>
           </section>
         </div>

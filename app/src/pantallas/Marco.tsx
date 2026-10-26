@@ -10,13 +10,14 @@ import { Cara } from "../componentes/Cara";
 const PESTANAS: { id: Ruta; texto: string; icono: NombreIcono }[] = [
   { id: "salon", texto: "Salón", icono: "salon" },
   { id: "cocina", texto: "Cocina", icono: "cocina" },
+  { id: "caja", texto: "Caja", icono: "caja" },
   { id: "menu", texto: "Menú", icono: "menu" },
   { id: "ajustes", texto: "Ajustes", icono: "ajustes" },
 ];
 
 /** Pestaña a la que pertenece cada lugar y qué tan adentro está. */
-const pestanaDe = (l: Lugar) => (l.ruta === "pedido" ? "salon" : l.ruta);
-const fondoDe = (l: Lugar) => (l.ruta === "pedido" || (l.ruta === "ajustes" && l.param) ? 1 : 0);
+const pestanaDe = (l: Lugar) => (l.ruta === "pedido" || l.ruta === "cobro" ? "salon" : l.ruta);
+const fondoDe = (l: Lugar) => (l.ruta === "cobro" ? 2 : l.ruta === "pedido" || (l.ruta === "ajustes" && l.param) ? 1 : 0);
 type Dir = "adelante" | "atras" | "derecha" | "izquierda";
 
 /** Cuántas comandas esperan en cocina, en vivo, para el globo de la pestaña. */

@@ -537,3 +537,113 @@ html[data-tema="cocina"] .pestana[aria-current="page"] { color: var(--ticket-tin
 
 .editor-acc .mover { display: inline-flex; gap: 8px; }
 html[data-tema="cocina"] .cab-persona { background: oklch(1 0 0 / 0.08); }
+
+/* ── Cobro ─────────────────────────────────── */
+.cobrar-pedido { width: 100%; }
+.tag.pagada { background: var(--e-comiendo); }
+.total-com.por-cobrar { padding-top: 0; border-top: 0; font-size: 16px; color: var(--tinta-2); }
+.total-com.por-cobrar strong { font-size: 22px; color: var(--tinta); }
+.aviso-cobro { margin: 16px var(--m) 0; max-width: 620px; padding: 14px 16px; border-radius: 14px; background: oklch(0.85 0.12 82 / 0.35); display: grid; gap: 10px; justify-items: start; }
+.cobro-cuerpo { display: grid; gap: 24px; padding: 18px var(--m) 0; }
+@media (min-width: 900px) { .cobro-cuerpo { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; } .cobro-resumen { position: sticky; top: 16px; } }
+.quienes { display: flex; flex-wrap: wrap; gap: 8px; }
+.quien { display: grid; justify-items: center; gap: 2px; min-width: 76px; padding: 10px 12px; border-radius: 14px; border: 1.5px solid var(--trazo); background: var(--ticket); transition: transform 140ms var(--ease-out), background-color 160ms ease, border-color 160ms ease; }
+.quien b { font-family: var(--titulo); font-weight: 700; font-size: 24px; line-height: 1; }
+.quien span { font-size: 13px; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.quien:active { transform: scale(0.96); }
+.quien[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--papel); }
+.quien[aria-pressed="true"] span { color: inherit; opacity: 0.8; }
+.billetes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.billete { min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1.5px solid var(--trazo); background: var(--ticket); font-family: var(--titulo); font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; transition: transform 140ms var(--ease-out); }
+.billete:active { transform: scale(0.96); }
+.cambio { margin-top: 8px; font-family: var(--titulo); font-weight: 500; font-size: 20px; color: var(--tinta-2); }
+.cambio strong { font-weight: 700; font-size: 34px; color: var(--tinta); font-variant-numeric: tabular-nums; margin-left: 6px; }
+.cambio.falta strong { color: var(--peligro); }
+.cobro-resumen { display: grid; gap: 14px; }
+.resumen-papel { padding: 18px 16px 26px; background: var(--ticket); color: var(--ticket-tinta); font-family: var(--titulo); filter: drop-shadow(0 10px 14px oklch(0.25 0.02 60 / 0.16));
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 14px 100%; mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 14px 100%; }
+.cobrar-b { min-height: 60px; font-size: 21px; }
+.cobrado { display: grid; justify-items: center; gap: 8px; text-align: center; padding: 26px var(--m) 0; }
+.cobrado-ok { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--e-comiendo); color: var(--tinta); animation: sello-ok 420ms var(--ease-out) both; }
+@keyframes sello-ok { from { opacity: 0; transform: scale(0.8); } }
+.cambio-grande { font-family: var(--titulo); font-weight: 500; font-size: 22px; color: var(--tinta-2); }
+.cambio-grande strong { display: block; font-weight: 700; font-size: 56px; line-height: 1; color: var(--tinta); font-variant-numeric: tabular-nums; }
+.cobro-ticket { display: grid; justify-items: center; padding: 22px var(--m) 0; }
+.cobro-acc { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 22px var(--m) 0; }
+
+/* ── Ticket de papel (pantalla e impresión) ── */
+.ticket-papel { width: min(100%, 340px); padding: 20px 18px 30px; background: var(--ticket); color: var(--ticket-tinta); font-family: var(--titulo); font-size: 16px; line-height: 1.25;
+  filter: drop-shadow(0 12px 16px oklch(0.25 0.02 60 / 0.18));
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 14px 100%; mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 14px 100%; }
+.tk-cab { display: grid; justify-items: center; gap: 4px; text-align: center; padding-bottom: 12px; border-bottom: 1.5px dashed oklch(0.22 0.012 60 / 0.4); }
+.tk-cab img { width: 54px; height: 54px; border-radius: 12px; object-fit: cover; }
+.tk-cab b { font-weight: 700; font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; }
+.tk-cab small { font-family: var(--cuerpo); font-size: 12.5px; opacity: 0.75; }
+.tk-titulo { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; font-weight: 700; font-size: 17px; text-transform: uppercase; letter-spacing: 0.05em; }
+.tk-titulo span + span { font-weight: 500; font-size: 14px; letter-spacing: 0; text-transform: none; text-align: right; }
+.tk-fecha { font-family: var(--cuerpo); font-size: 12.5px; opacity: 0.7; margin-bottom: 8px; }
+.tk-lineas, .tk-filas { padding: 8px 0; border-top: 1.5px dashed oklch(0.22 0.012 60 / 0.4); display: grid; gap: 4px; }
+.tk-linea { display: grid; grid-template-columns: 26px 1fr auto; gap: 6px; font-variant-numeric: tabular-nums; }
+.tk-linea span:first-child { font-weight: 700; }
+.tk-fila { display: flex; justify-content: space-between; gap: 10px; font-variant-numeric: tabular-nums; }
+.tk-fila.fuerte { font-weight: 700; }
+.tk-total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 8px; border-top: 1.5px dashed oklch(0.22 0.012 60 / 0.4); font-weight: 700; font-size: 20px; }
+.tk-total strong { font-size: 28px; font-variant-numeric: tabular-nums; }
+.tk-pie { display: grid; gap: 4px; padding-top: 10px; margin-top: 8px; border-top: 1.5px dashed oklch(0.22 0.012 60 / 0.4); text-align: center; }
+.tk-pie .tk-fila, .tk-pie .tk-linea { text-align: left; }
+.tk-pie p { margin-top: 4px; }
+.tk-sub { font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 13px; text-align: left; margin-top: 8px !important; }
+.tk-chico { font-family: var(--cuerpo); font-size: 11.5px; opacity: 0.7; }
+
+@media print {
+  @page { size: 80mm auto; margin: 3mm; }
+  html.imprimiendo body { background: #fff !important; }
+  html.imprimiendo body * { visibility: hidden; }
+  html.imprimiendo .imprimible, html.imprimiendo .imprimible * { visibility: visible; }
+  html.imprimiendo .imprimible { position: absolute; left: 0; top: 0; width: 74mm; padding: 0; filter: none; -webkit-mask: none; mask: none; background: #fff; color: #000; font-size: 13px; }
+  html.imprimiendo .tk-cab img { width: 40px; height: 40px; }
+  html.imprimiendo .tk-total strong { font-size: 20px; }
+}
+
+/* ── Caja ──────────────────────────────────── */
+.abrir-caja, .turno { display: grid; gap: 16px; padding: 18px var(--m) 0; max-width: 620px; }
+.cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cifra { display: grid; gap: 2px; padding: 14px 16px; border-radius: 16px; background: var(--ticket); border: 1px solid var(--linea); }
+.cifra.grande { grid-column: 1 / -1; }
+.cifra span { font-family: var(--titulo); font-weight: 600; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tinta-2); }
+.cifra strong { font-family: var(--titulo); font-weight: 700; font-size: 30px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.cifra.grande strong { font-size: 48px; }
+.cifra small { font-size: 13px; color: var(--tinta-2); }
+.metodos { display: grid; gap: 10px; padding: 14px 16px; border-radius: 16px; background: var(--ticket); border: 1px solid var(--linea); }
+.metodo-txt { display: flex; justify-content: space-between; font-size: 15px; }
+.metodo-txt b { font-family: var(--titulo); font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
+.barrita { height: 6px; border-radius: 3px; background: var(--papel-3); overflow: hidden; margin-top: 4px; }
+.barrita i { display: block; height: 100%; background: var(--acento); transform-origin: left; transition: transform 500ms var(--ease-in-out); }
+.esperado { padding: 14px 16px; border-radius: 16px; border: 1.5px dashed var(--trazo); }
+.esperado p:first-child { font-size: 16px; }
+.esperado strong { font-family: var(--titulo); font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums; margin-left: 4px; }
+.fondo-edit { display: flex; gap: 8px; margin-top: 8px; }
+.fondo-edit .entrada { max-width: 160px; }
+.top h2, .historial h2 { font-family: var(--titulo); font-weight: 600; font-size: 22px; margin-bottom: 8px; }
+.top ol { list-style: none; padding: 0; margin: 0; counter-reset: top; display: grid; gap: 6px; }
+.top li { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: baseline; counter-increment: top; }
+.top li::before { content: counter(top); font-family: var(--titulo); font-weight: 700; color: var(--tinta-3); }
+.top li b { font-family: var(--titulo); font-weight: 700; font-variant-numeric: tabular-nums; }
+.form-corte { display: grid; gap: 14px; padding: 16px; border-radius: 16px; background: var(--ticket); border: 1px solid var(--linea); }
+.diferencia { font-family: var(--titulo); font-weight: 500; font-size: 20px; }
+.diferencia strong { font-weight: 700; font-size: 30px; font-variant-numeric: tabular-nums; margin-left: 4px; }
+.diferencia.cuadra { color: oklch(0.45 0.1 150); }
+.diferencia.falta strong { color: var(--peligro); }
+.historial { padding: 26px var(--m) 0; max-width: 620px; }
+.historial ul { list-style: none; padding: 0; margin: 0; border-radius: 16px; background: var(--ticket); border: 1px solid var(--linea); overflow: hidden; }
+.historial li + li { border-top: 1px solid var(--linea); }
+.fila-corte { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 10px 14px 10px 16px; border: 0; background: transparent; text-align: left; transition: background-color 160ms ease; }
+.fila-corte span:first-child { display: grid; }
+.fila-corte b { font-family: var(--titulo); font-weight: 600; font-size: 18px; }
+.fila-corte small, .fila-corte .dif { font-size: 13px; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.fila-corte:active { background: var(--papel-2); }
+@media (hover: hover) and (pointer: fine) {
+  .quien:hover:not([aria-pressed="true"]), .billete:hover { border-color: var(--tinta-2); }
+  .fila-corte:hover { background: oklch(0.25 0.02 60 / 0.035); }
+}
+@media (prefers-reduced-motion: reduce) { .cobrado-ok { animation-name: aparece; } .barrita i { transition-duration: 1ms; } }

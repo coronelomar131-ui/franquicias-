@@ -3,6 +3,8 @@ const TRAZOS = {
   adelante: "M9 6l6 6-6 6",
   tienda: "M4 10l1.5-5h13L20 10M4 10h16M5 10v10h14V10M10 20v-5h4v5",
   candado: "M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5zM12 15v2",
+  caja: "M4 10h16v10H4zM7 10V5h10v5M8 14h2M14 14h2M8 17h8",
+  imprimir: "M7 9V4h10v5M6 18H4v-7h16v7h-2M7 14h10v6H7z",
   mas: "M12 5v14M5 12h14",
   menos: "M5 12h14",
   ok: "M5 12.5l4.5 4.5L19 7.5",

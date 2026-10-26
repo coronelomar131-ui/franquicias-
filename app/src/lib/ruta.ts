@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
-export type Ruta = "salon" | "cocina" | "menu" | "ajustes" | "nuevo" | "pedido";
-const VALIDAS: Ruta[] = ["salon", "cocina", "menu", "ajustes", "nuevo", "pedido"];
+export type Ruta = "salon" | "cocina" | "caja" | "menu" | "ajustes" | "nuevo" | "pedido" | "cobro";
+const VALIDAS: Ruta[] = ["salon", "cocina", "caja", "menu", "ajustes", "nuevo", "pedido", "cobro"];
 export interface Lugar { ruta: Ruta; param: string | null; }
 
 function leer(): Lugar {
   const [r, p] = location.hash.replace(/^#\/?/, "").split("/");
   const ruta = VALIDAS.includes(r as Ruta) ? (r as Ruta) : "salon";
-  if (ruta === "pedido" && !p) return { ruta: "salon", param: null };
+  if ((ruta === "pedido" || ruta === "cobro") && !p) return { ruta: "salon", param: null };
   return { ruta, param: p ? decodeURIComponent(p) : null };
 }
 

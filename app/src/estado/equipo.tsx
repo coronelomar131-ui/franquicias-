@@ -8,8 +8,8 @@ import type { Ruta } from "../lib/ruta";
 export const PERMISOS: Record<Rol, Ruta[]> = {
   mesero: ["salon"],
   cocina: ["cocina"],
-  caja: ["salon", "cocina"],
-  gerente: ["salon", "cocina", "menu"],
+  caja: ["salon", "cocina", "caja"],
+  gerente: ["salon", "cocina", "caja", "menu"],
 };
 /** Sin tocar la pantalla este tiempo, la sesión del equipo se cierra y vuelve a pedir PIN. */
 const INACTIVIDAD_MS = 3 * 60 * 1000;
@@ -61,7 +61,7 @@ export function ProveedorEquipo({ children }: { children: ReactNode }) {
     modo: !!empleadoId,
     persona,
     soltar: () => { void salir(); },
-    puede: (r) => !empleadoId || PERMISOS[rol].includes(r) || (r === "pedido" && PERMISOS[rol].includes("salon")),
+    puede: (r) => !empleadoId || PERMISOS[rol].includes(r) || ((r === "pedido" || r === "cobro") && PERMISOS[rol].includes("salon")),
   };
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;
 }

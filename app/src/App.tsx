@@ -10,6 +10,8 @@ import { Pedido } from "./pantallas/Pedido";
 import { Cocina } from "./pantallas/Cocina";
 import { Menu } from "./pantallas/Menu";
 import { Ajustes } from "./pantallas/Ajustes";
+import { Cobro } from "./pantallas/Cobro";
+import { Caja } from "./pantallas/Caja";
 import { MesaDibujo } from "./componentes/MesaDibujo";
 
 export function App() {
@@ -42,7 +44,9 @@ function Turno({ rid, lugar, ir }: { rid: string; lugar: Lugar; ir: (r: Ruta, pa
     <Marco lugar={lugar} ir={ir}>
       {ruta === "salon" && <Salon rid={rid} ir={ir} />}
       {ruta === "pedido" && param && <Pedido key={param} rid={rid} ordenId={param} ir={ir} />}
+      {ruta === "cobro" && param && <Cobro key={param} ordenId={param} ir={ir} />}
       {ruta === "cocina" && <Cocina rid={rid} />}
+      {ruta === "caja" && <Caja rid={rid} />}
       {ruta === "menu" && <Menu rid={rid} />}
       {ruta === "ajustes" && <Ajustes rid={rid} parte={param} ir={ir} />}
     </Marco>
