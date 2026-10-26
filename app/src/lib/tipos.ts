@@ -25,4 +25,13 @@ export interface Renglon {
   id: string; restaurante_id: string; orden_id: string; producto_id: string | null; nombre: string; precio_centavos: number;
   cantidad: number; comensal: number; nota: string; comanda_id: string | null; pagado: boolean; cancelado: boolean; creado_en: string;
 }
+export type Metodo = "efectivo" | "tarjeta" | "transferencia";
+export interface Turno { id: string; restaurante_id: string; abierto_en: string; fondo_centavos: number; cerrado_en: string | null; efectivo_contado_centavos: number | null; notas: string; }
+export interface ResumenTurno {
+  turno_id: string; abierto_en: string; cerrado_en: string | null; fondo: number; contado: number | null; notas: string;
+  abierto_por: string | null; cerrado_por: string | null; cobros: number; cuentas: number; ventas: number; propinas: number;
+  efectivo: number; tarjeta: number; transferencia: number; esperado: number; abiertas: number; por_cobrar: number;
+  mas_vendido: { nombre: string; cantidad: number; importe: number }[];
+}
+export interface ResultadoCobro { pago_id: string; total: number; propina: number; cambio: number; restan: number; cerrada: boolean; turno_id: string; }
 export interface Comanda { id: string; restaurante_id: string; orden_id: string; ronda: number; estado: "pendiente" | "lista"; enviada_en: string; lista_en: string | null; }
