@@ -363,7 +363,7 @@ html[data-tema="cocina"] .pestana[aria-current="page"] { color: var(--ticket-tin
 .letra b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 650; font-size: 24px; line-height: 1.05; color: var(--tinta); }
 .letra span { font-size: 13px; color: var(--tinta-2); }
 .letra[aria-checked="true"] { border-color: var(--acento-tinta); box-shadow: 0 0 0 3px var(--acento-suave); }
-.muestra.papel i { color: var(--tinta); box-shadow: inset 0 0 0 1.5px var(--trazo); }
+.muestra.de-papel i { color: var(--tinta); box-shadow: inset 0 0 0 1.5px var(--trazo); }
 .previa-nom { display: grid; min-width: 0; }
 .previa-nom small { font-family: var(--cuerpo); font-size: 13px; color: oklch(0.22 0.012 60 / 0.7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .membrete { display: grid; justify-items: center; gap: 6px; text-align: center; padding: 26px 0 10px; margin-bottom: 8px; border-bottom: 1.5px solid var(--tinta); position: relative; }

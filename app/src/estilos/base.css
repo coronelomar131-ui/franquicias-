@@ -54,7 +54,8 @@ button:disabled { cursor: not-allowed; }
 
 /* ── Tipografía ─────────────────────────── */
 .titulo { font-family: var(--titulo); font-weight: 500; font-size: clamp(44px, 12vw, 76px); line-height: 0.9; letter-spacing: -0.012em; text-wrap: balance; }
-.titulo:focus-visible { outline-offset: 4px; }
+/* Los títulos reciben el foco al cambiar de pantalla (para lectores de pantalla); ese foco no se dibuja */
+h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus { outline: none; }
 .sobre { font-family: var(--titulo); font-weight: 600; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--tinta-2); }
 .sub { color: var(--tinta-2); font-size: 16px; max-width: 52ch; }
 .sub b { font-family: var(--titulo); font-weight: 600; font-size: 18px; color: var(--tinta); font-variant-numeric: tabular-nums; }
