@@ -41,6 +41,8 @@ export function Negocio({ rid }: { rid: string }) {
   // Lo que se elige se ve al instante en toda la app
   useEffect(() => { aplicarMarca({ color_principal: principal, color_secundario: secundario, color_fondo: colorFondo, tipografia: letra, fondo }); }, [principal, secundario, colorFondo, letra, fondo]);
   useEffect(() => () => aplicarMarca(guardado.current), []);
+  // Las muestras de letra se ven con su letra real desde el inicio (en teléfono no hay "pasar el mouse")
+  useEffect(() => { TIPOGRAFIAS.forEach((t) => { t.cargar().catch(() => {}); }); }, []);
 
   async function guardar(e: FormEvent) {
     e.preventDefault();
@@ -129,7 +131,7 @@ export function Negocio({ rid }: { rid: string }) {
             <legend>Letra</legend>
             <div className="letras" role="radiogroup" aria-label="Letra">
               {TIPOGRAFIAS.map((t) => (
-                <button key={t.id} type="button" role="radio" aria-checked={letra === t.id} className="letra" onClick={() => setLetra(t.id)} onPointerEnter={() => { t.cargar().catch(() => {}); }}>
+                <button key={t.id} type="button" role="radio" aria-checked={letra === t.id} className="letra" onClick={() => setLetra(t.id)}>
                   <b style={{ fontFamily: t.familia }} translate="no">{nombre.trim() || "Tu restaurante"}</b>
                   <span>{t.nombre} · {t.para}</span>
                 </button>
@@ -141,7 +143,7 @@ export function Negocio({ rid }: { rid: string }) {
             <legend>Papel</legend>
             <div className="muestras" role="radiogroup" aria-label="Papel">
               {FONDOS.map((f) => (
-                <button key={f.id} type="button" role="radio" aria-checked={!colorFondo && fondo === f.id} className="muestra papel" onClick={() => { setFondo(f.id); setColorFondo(null); }} style={{ ["--c" as string]: f.muestra }}>
+                <button key={f.id} type="button" role="radio" aria-checked={!colorFondo && fondo === f.id} className="muestra de-papel" onClick={() => { setFondo(f.id); setColorFondo(null); }} style={{ ["--c" as string]: f.muestra }}>
                   <i aria-hidden="true">{!colorFondo && fondo === f.id && <Icono n="ok" tam={18} />}</i>
                   <span>{f.nombre}</span>
                 </button>

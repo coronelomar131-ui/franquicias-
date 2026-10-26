@@ -118,10 +118,10 @@ function EditorMesa({ inicial, onGuardar, onCancelar, onBorrar, onMover }: { ini
         <div className="editor-acc">
           <button className="primario" type="submit" disabled={enviando || !nombre.trim()}>{enviando ? "Guardando…" : onBorrar ? "Guardar" : "Agregar"}</button>
           <button className="secundario" type="button" onClick={onCancelar}>{onBorrar ? "Cancelar" : "Listo"}</button>
-          {onMover && <>
+          {onMover && <span className="mover">
             <button className="icono-b" type="button" onClick={() => onMover(-1)} aria-label="Mover antes"><Icono n="arriba" /></button>
             <button className="icono-b" type="button" onClick={() => onMover(1)} aria-label="Mover después"><Icono n="abajo" /></button>
-          </>}
+          </span>}
           {onBorrar && <span className="editor-extra"><DobleToque texto="Borrar" pregunta="¿Borrar? Toca otra vez" onConfirmar={onBorrar} /></span>}
         </div>
       </div>
