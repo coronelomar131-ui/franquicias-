@@ -6,6 +6,10 @@ import type { Lugar, Ruta } from "../lib/ruta";
 import { aplicarMarca, hexFondo } from "../lib/marca";
 import { Icono, type NombreIcono } from "../componentes/Icono";
 import { Cara } from "../componentes/Cara";
+import { useAviso } from "../componentes/Aviso";
+import { cuandoFalle, useConexion } from "../lib/cola";
+import { precargar } from "../lib/precarga";
+import { mensajeError } from "../lib/formato";
 
 const PESTANAS: { id: Ruta; texto: string; icono: NombreIcono }[] = [
   { id: "salon", texto: "Salón", icono: "salon" },
@@ -50,6 +54,11 @@ export function Marco({ lugar, ir, children }: { lugar: Lugar; ir: (r: Ruta, par
   const previo = useRef<Lugar | null>(null);
   const pendientes = usePendientes(actual?.id);
   const llave = ruta + "/" + (lugar.param ?? "");
+  const { enLinea, cuantos } = useConexion();
+  const avisar = useAviso();
+  // Menú y mesas guardados en el aparato, por si se va el internet; se refresca al volver la señal
+  useEffect(() => { if (actual?.id && enLinea) void precargar(actual.id); }, [actual?.id, enLinea]);
+  useEffect(() => { cuandoFalle((texto, error) => avisar(`No se pudo guardar: ${texto}. ${mensajeError({ message: error })}`, "error")); }, [avisar]);
 
   // Dirección de entrada: entrar a algo viene de la derecha, regresar de la izquierda,
   // cambiar de pestaña se desliza hacia el lado de la pestaña.
@@ -96,6 +105,14 @@ export function Marco({ lugar, ir, children }: { lugar: Lugar; ir: (r: Ruta, par
           </button>
         ) : <button className="cab-salir" type="button" onClick={salir} aria-label="Cerrar sesión"><Icono n="salir" tam={20} /></button>}
       </header>
+      {(!enLinea || cuantos > 0) && (
+        <div className={"conexion" + (enLinea ? " mandando" : "")} role="status">
+          <i aria-hidden="true" />
+          {enLinea
+            ? <span>Mandando {cuantos} {cuantos === 1 ? "cambio" : "cambios"} que se hicieron sin internet…</span>
+            : <span><b>Sin internet.</b> Sigue trabajando: lo que hagas se guarda aquí{cuantos ? ` (${cuantos} por mandar)` : ""} y se manda al volver la señal.</span>}
+        </div>
+      )}
       <main ref={principal} key={llave} className="vista" data-dir={dir.current}>{children}</main>
       {pestanas.length > 1 && <nav className="dock vidrio" aria-label="Secciones" style={{ ["--n" as string]: pestanas.length }}>
         <span className="lente" style={{ transform: `translateX(${i * 100}%)` }} aria-hidden="true" />

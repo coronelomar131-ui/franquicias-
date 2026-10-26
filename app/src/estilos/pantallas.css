@@ -647,3 +647,34 @@ html[data-tema="cocina"] .cab-persona { background: oklch(1 0 0 / 0.08); }
   .fila-corte:hover { background: oklch(0.25 0.02 60 / 0.035); }
 }
 @media (prefers-reduced-motion: reduce) { .cobrado-ok { animation-name: aparece; } .barrita i { transition-duration: 1ms; } }
+
+/* ── Sin internet ──────────────────────────── */
+.conexion { display: flex; align-items: flex-start; gap: 10px; max-width: calc(var(--ancho) - 2 * var(--m)); margin: 10px var(--m) 0; padding: 10px 14px; border-radius: 14px; background: oklch(0.85 0.12 82 / 0.4); color: var(--tinta); font-size: 14px; line-height: 1.35; animation: entra 240ms var(--ease-out) both; }
+.conexion i { flex: none; width: 10px; height: 10px; margin-top: 4px; border-radius: 50%; background: var(--peligro); }
+.conexion.mandando { background: oklch(0.84 0.07 150 / 0.4); }
+.conexion.mandando i { background: oklch(0.5 0.12 150); animation: respira 900ms ease-in-out infinite alternate; }
+html[data-tema="cocina"] .conexion { background: oklch(0.85 0.12 82 / 0.18); }
+@media (min-width: 1240px) { .conexion { margin-left: auto; margin-right: auto; } }
+
+/* ── Impresión en cocina ───────────────────── */
+.cocina .encabezado { position: relative; }
+.impresora-b { position: absolute; right: var(--m); top: 18px; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.3px solid var(--trazo); background: transparent; color: var(--tinta-2); font-family: var(--titulo); font-weight: 600; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; transition: transform 140ms var(--ease-out), background-color 160ms ease; }
+.impresora-b:active { transform: scale(0.97); }
+.impresora-b.activa { border-color: oklch(0.72 0.1 150); color: oklch(0.84 0.07 150); }
+.panel-imp { display: grid; gap: 14px; margin: 14px var(--m) 0; max-width: 560px; padding: 16px; border-radius: 16px; background: oklch(1 0 0 / 0.06); border: 1px solid var(--linea); justify-items: start; }
+.panel-imp .campo { width: 100%; }
+.acc-k { display: flex; gap: 8px; }
+.acc-k .lista { flex: 1; }
+.imp-k { flex: none; width: 56px; border-radius: 14px; border: 1.3px solid oklch(1 0 0 / 0.22); background: transparent; color: var(--tinta-2); display: grid; place-items: center; transition: transform 140ms var(--ease-out); }
+.imp-k:active { transform: scale(0.95); }
+.solo-imprimir { display: none; }
+@media print {
+  html.imprimiendo .solo-imprimir { display: grid; }
+  .comanda-imp { gap: 4px; font-family: var(--titulo); color: #000; background: #fff; }
+  .comanda-imp > b { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .comanda-imp > strong { font-size: 30px; line-height: 1; }
+  .comanda-imp > span { font-size: 13px; border-bottom: 1.5px dashed #000; padding-bottom: 6px; }
+  .comanda-imp h4 { margin-top: 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .comanda-imp p { font-size: 18px; line-height: 1.25; }
+  .comanda-imp em { font-style: normal; font-size: 14px; }
+}

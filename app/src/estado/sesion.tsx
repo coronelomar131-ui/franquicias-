@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
+import { conRecuerdo } from "../lib/recuerdo";
 import type { Restaurante } from "../lib/tipos";
 
 interface Sesion {
@@ -30,8 +31,8 @@ export function ProveedorSesion({ children }: { children: ReactNode }) {
   const [actualId, setActualId] = useState<string | null>(leer());
 
   const recargar = useCallback(async () => {
-    const { data, error } = await supabase.from("restaurantes").select("id, nombre, zona_horaria, logo_url, color_marca, tipografia, fondo, eslogan, color_principal, color_secundario, color_fondo, codigo_equipo").order("creado_en");
-    if (error) throw error;
+    // Sin señal se abre con los datos del último inicio
+    const data = await conRecuerdo<Restaurante[]>("restaurantes", () => supabase.from("restaurantes").select("id, nombre, zona_horaria, logo_url, color_marca, tipografia, fondo, eslogan, color_principal, color_secundario, color_fondo, codigo_equipo").order("creado_en"));
     setRestaurantes(data ?? []);
     setActualId((id) => (data?.some((r) => r.id === id) ? id : data?.[0]?.id ?? null));
   }, []);

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { conRecuerdo } from "../lib/recuerdo";
+import { conPendientesRenglones, guardar } from "../lib/cola";
 import { useSesion } from "../estado/sesion";
 import type { Mesa, Metodo, Orden, Renglon, ResultadoCobro } from "../lib/tipos";
 import type { Ruta } from "../lib/ruta";
@@ -43,14 +45,12 @@ export function Cobro({ ordenId, ir }: { ordenId: string; ir: (r: Ruta, param?: 
   const [hecho, setHecho] = useState<{ r: ResultadoCobro; lineas: LineaTicket[]; metodo: Metodo; recibido: number | null; quien: string } | null>(null);
 
   const cargar = useCallback(async () => {
-    const { data: o, error } = await supabase.from("ordenes").select("id, restaurante_id, mesa_id, folio, comensales, estado, abierta_en").eq("id", ordenId).single();
-    if (error) throw error;
+    const o = await conRecuerdo<Orden>("orden:" + ordenId, () => supabase.from("ordenes").select("id, restaurante_id, mesa_id, folio, comensales, estado, abierta_en").eq("id", ordenId).single());
     const [m, rs] = await Promise.all([
-      o.mesa_id ? supabase.from("mesas").select("*").eq("id", o.mesa_id).single() : Promise.resolve({ data: null, error: null }),
-      supabase.from("renglones").select("*").eq("orden_id", ordenId).eq("cancelado", false).order("comensal").order("creado_en"),
+      o.mesa_id ? conRecuerdo<Mesa>("mesa:" + o.mesa_id, () => supabase.from("mesas").select("*").eq("id", o.mesa_id!).single()) : Promise.resolve(null),
+      conRecuerdo<Renglon[]>("renglones:" + ordenId, () => supabase.from("renglones").select("*").eq("orden_id", ordenId).eq("cancelado", false).order("creado_en"), []),
     ]);
-    if (rs.error) throw rs.error;
-    setOrden(o as Orden); setMesa((m.data as Mesa | null) ?? null); setRenglones((rs.data ?? []) as Renglon[]);
+    setOrden(o); setMesa(m); setRenglones(conPendientesRenglones(ordenId, rs ?? []).sort((a, b) => a.comensal - b.comensal));
   }, [ordenId]);
   useEffect(() => { cargar().catch((e) => { avisar(mensajeError(e), "error"); setRenglones([]); }); }, [cargar, avisar]);
 
@@ -77,15 +77,22 @@ export function Cobro({ ordenId, ir }: { ordenId: string; ir: (r: Ruta, param?: 
   async function cobrar() {
     if (!listo || !orden) return;
     setCobrando(true);
-    const { data, error } = await supabase.rpc("cobrar", {
+    const args = {
       p_orden: orden.id, p_metodo: metodo, p_propina: montoPropina,
       p_recibido: metodo === "efectivo" ? recibidoC : null,
       p_comensales: modo === "todo" ? null : elegidos,
-    });
+    };
+    const res = await guardar({ tipo: "rpc", fn: "cobrar", args }, { ordenId: orden.id, texto: `Cobro de ${pesos(total)} (mesa ${mesa?.nombre ?? orden.folio})` });
     setCobrando(false);
-    if (error) { avisar(mensajeError(error), "error"); return; }
+    if (!res.ok) { avisar(mensajeError({ message: res.error }), "error"); return; }
+    // Sin señal el cobro queda guardado y la cuenta se calcula aquí mismo; el servidor la confirma al volver
+    const restan = pendientes.reduce((s, r) => s + r.precio_centavos * r.cantidad, 0) - subtotal;
+    const data: ResultadoCobro = res.enCola
+      ? { pago_id: "", total: subtotal, propina: montoPropina, cambio: metodo === "efectivo" ? (recibidoC ?? 0) - total : 0, restan, cerrada: restan === 0, turno_id: "" }
+      : (res.data as ResultadoCobro);
+    if (res.enCola) avisar("Sin internet: el cobro se guardó y se registra en caja al volver la señal");
     const quien = modo === "todo" ? "" : elegidos.length === 1 ? `Comensal ${elegidos[0]}` : `Comensales ${elegidos.join(", ")}`;
-    setHecho({ r: data as ResultadoCobro, lineas: agrupar(seleccion), metodo, recibido: metodo === "efectivo" ? recibidoC : null, quien });
+    setHecho({ r: data, lineas: agrupar(seleccion), metodo, recibido: metodo === "efectivo" ? recibidoC : null, quien });
     // Lo que quede se cobra junto; si quieren dividir otra vez, cambian a "Por comensal"
     setRecibido(""); setElegidos([]); setModo("todo"); setPropina("0"); setPropinaOtra("");
     await cargar().catch(() => {});
@@ -116,7 +123,7 @@ export function Cobro({ ordenId, ir }: { ordenId: string; ir: (r: Ruta, param?: 
           <p className="sub">{r.cerrada ? `${nombreMesa} queda libre.` : `Falta por cobrar ${pesos(r.restan)} de ${nombreMesa}.`}</p>
         </div>
         <div className="cobro-ticket">
-          <Ticket restaurante={actual} titulo={nombreMesa} subtitulo={[hecho.quien, `Folio ${orden?.folio}`].filter(Boolean).join(" · ")}
+          <Ticket restaurante={actual} titulo={nombreMesa} subtitulo={[hecho.quien, orden?.folio ? `Folio ${orden.folio}` : ""].filter(Boolean).join(" · ")}
             lineas={hecho.lineas} filas={filas} total={["Total", r.total + r.propina]} pie={pie} />
         </div>
         <div className="cobro-acc">
@@ -140,7 +147,7 @@ export function Cobro({ ordenId, ir }: { ordenId: string; ir: (r: Ruta, param?: 
       <button type="button" className="vuelta" onClick={() => ir("pedido", ordenId)}><Icono n="atras" tam={20} />{nombreMesa}</button>
       <div className="encabezado">
         <h1 className="titulo" tabIndex={-1}>Cobrar</h1>
-        <p className="sub">{nombreMesa} · Folio {orden?.folio} · Por cobrar <b>{pesos(pendientes.reduce((s, r) => s + r.precio_centavos * r.cantidad, 0))}</b></p>
+        <p className="sub">{nombreMesa}{orden?.folio ? ` · Folio ${orden.folio}` : ""} · Por cobrar <b>{pesos(pendientes.reduce((s, r) => s + r.precio_centavos * r.cantidad, 0))}</b></p>
       </div>
 
       {sinMandar && (
