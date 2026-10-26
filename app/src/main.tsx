@@ -21,3 +21,8 @@ createRoot(document.getElementById("raiz")!).render(
     </ProveedorAviso>
   </StrictMode>
 );
+
+// Guarda la app en el aparato para abrirla sin internet (solo en la versión publicada)
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  addEventListener("load", () => { navigator.serviceWorker.register("/sw.js").catch(() => {}); });
+}

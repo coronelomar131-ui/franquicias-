@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { conRecuerdo, recordar } from "../lib/recuerdo";
+import { conPendientesOrdenes, guardar, SINCRONIZADO } from "../lib/cola";
 import { useSesion } from "../estado/sesion";
 import { useEquipo } from "../estado/equipo";
 import type { Mesa, Orden } from "../lib/tipos";
@@ -27,8 +29,8 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
   }, []);
 
   const cargarOrdenes = useCallback(async () => {
-    const { data, error } = await supabase.from("ordenes").select("id, restaurante_id, mesa_id, folio, comensales, estado, abierta_en").eq("restaurante_id", rid).eq("estado", "abierta");
-    if (error) throw error;
+    const vistas = await conRecuerdo<Orden[]>("ordenes:" + rid, () => supabase.from("ordenes").select("id, restaurante_id, mesa_id, folio, comensales, estado, abierta_en").eq("restaurante_id", rid).eq("estado", "abierta"));
+    const data = conPendientesOrdenes(vistas ?? []).filter((o) => o.estado === "abierta");
     const antes = ordenesRef.current;
     if (antes) {
       const ocupadasAntes = new Set(antes.map((o) => o.mesa_id));
@@ -42,8 +44,7 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
     let vivo = true;
     (async () => {
       try {
-        const { data, error } = await supabase.from("mesas").select("*").eq("restaurante_id", rid).eq("activa", true).order("orden").order("creado_en");
-        if (error) throw error;
+        const data = await conRecuerdo<Mesa[]>("mesas:" + rid, () => supabase.from("mesas").select("*").eq("restaurante_id", rid).eq("activa", true).order("orden").order("creado_en"));
         if (vivo) setMesas(data ?? []);
         await cargarOrdenes();
       } catch (e) { if (vivo) { setMesas([]); avisar(mensajeError(e), "error"); } }
@@ -53,7 +54,9 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
       .on("postgres_changes", { event: "*", schema: "public", table: "ordenes", filter: "restaurante_id=eq." + rid }, () => { cargarOrdenes().catch(() => {}); })
       .subscribe();
     const reloj = window.setInterval(() => setTic((t) => t + 1), 30000);
-    return () => { vivo = false; supabase.removeChannel(canal); window.clearInterval(reloj); };
+    const alSincronizar = () => { cargarOrdenes().catch(() => {}); };
+    addEventListener(SINCRONIZADO, alSincronizar);
+    return () => { vivo = false; supabase.removeChannel(canal); window.clearInterval(reloj); removeEventListener(SINCRONIZADO, alSincronizar); };
   }, [rid, cargarOrdenes, avisar]);
 
   const ordenDe = (mid: string) => ordenes.find((o) => o.mesa_id === mid);
@@ -72,8 +75,12 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
     if (!mesaSel) return;
     setTrabajando(true);
     try {
-      const { data, error } = await supabase.from("ordenes").insert({ restaurante_id: rid, mesa_id: mesaSel.id, comensales, abierta_por: persona?.id ?? null }).select("id").single();
-      if (error) throw error;
+      // El id sale de aquí: así la mesa se puede abrir aunque no haya señal
+      const fila = { id: crypto.randomUUID(), restaurante_id: rid, mesa_id: mesaSel.id, comensales, abierta_por: persona?.id ?? null };
+      const r = await guardar({ tipo: "insertar", tabla: "ordenes", fila }, { ordenId: fila.id, texto: `Abrir la mesa ${mesaSel.nombre}` });
+      if (!r.ok) throw new Error(r.error);
+      if (r.enCola) recordar("orden:" + fila.id, { ...fila, folio: 0, estado: "abierta", abierta_en: new Date().toISOString() });
+      const data = fila;
       await cargarOrdenes();
       avisar(`Mesa ${mesaSel.nombre} abierta · ${comensales} ${comensales === 1 ? "comensal" : "comensales"}`);
       // Deja ver cómo se sientan los comensales y pasa directo a tomar el pedido
@@ -86,8 +93,8 @@ export function Salon({ rid, ir }: { rid: string; ir: (r: Ruta, param?: string) 
     if (!ordenSel || !mesaSel) return;
     setTrabajando(true);
     try {
-      const { error } = await supabase.from("ordenes").update({ estado: "cancelada", cerrada_en: new Date().toISOString() }).eq("id", ordenSel.id);
-      if (error) throw error;
+      const r = await guardar({ tipo: "cambiar", tabla: "ordenes", filaId: ordenSel.id, cambios: { estado: "cancelada", cerrada_en: new Date().toISOString() } }, { ordenId: ordenSel.id, texto: `Liberar la mesa ${mesaSel.nombre}` });
+      if (!r.ok) throw new Error(r.error);
       await cargarOrdenes();
       setSel(null);
       avisar(`Mesa ${mesaSel.nombre} libre`);
@@ -186,7 +193,8 @@ function PuestaAPunto({ rid, mesas, ir }: { rid: string; mesas: number; ir: (r: 
     Promise.all([
       supabase.from("productos").select("id", { count: "exact", head: true }).eq("restaurante_id", rid),
       supabase.from("empleados").select("id", { count: "exact", head: true }).eq("restaurante_id", rid),
-    ]).then(([p, e]) => { if (vivo) setC({ platillos: p.count ?? 0, equipo: e.count ?? 0 }); }).catch(() => {});
+    // Si no se pudo preguntar (sin internet), no se muestra: mejor nada que decir que falta algo que sí está
+    ]).then(([p, e]) => { if (vivo && !p.error && !e.error) setC({ platillos: p.count ?? 0, equipo: e.count ?? 0 }); }).catch(() => {});
     return () => { vivo = false; };
   }, [rid]);
   if (!c || oculta) return null;
