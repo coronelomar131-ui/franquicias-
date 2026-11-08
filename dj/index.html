@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DJ Maquiavélico</title>
+<meta name="theme-color" content="#0b0a12">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <button id="logo" class="logo" type="button" aria-label="DJ Maquiavélico">🎧 <span>DJ Maquiavélico</span></button>
+  <button id="btnGuest" class="ghost hidden" type="button">Pantalla invitados</button>
+</header>
+
+<main>
+  <!-- 1. Configurar la app de Spotify -->
+  <section id="vSetup" class="card hidden">
+    <h1>Conecta tu Spotify</h1>
+    <ol class="steps">
+      <li>Entra a <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a> con tu cuenta de Spotify.</li>
+      <li>Dale <b>Create app</b>. Nombre y descripción: lo que quieras.</li>
+      <li>En <b>Redirect URIs</b> pega exactamente esto y dale <b>Add</b>:
+        <div class="copy"><code id="redirectUri"></code><button id="copyRedirect" type="button" class="ghost">Copiar</button></div>
+      </li>
+      <li>En “Which API/SDKs are you planning to use?” marca <b>Web API</b> y <b>Web Playback SDK</b>. Acepta y guarda.</li>
+      <li>Copia el <b>Client ID</b> y pégalo aquí:</li>
+    </ol>
+    <form id="fClient" class="inline">
+      <input id="inClient" placeholder="Client ID (32 caracteres)" autocomplete="off" spellcheck="false" required pattern="[0-9a-fA-F]{32}">
+      <button class="primary">Guardar</button>
+    </form>
+    <p class="muted small">El Client ID no es secreto. No pegues el Client Secret: esta app no lo usa.</p>
+  </section>
+
+  <!-- 2. Iniciar sesión -->
+  <section id="vLogin" class="card hidden">
+    <h1>Listo para conectar</h1>
+    <p>Inicia sesión con tu cuenta de Spotify. Para controlar la música Spotify pide <b>Premium</b>.</p>
+    <button id="btnLogin" class="primary big" type="button">Conectar con Spotify</button>
+    <p><button id="btnResetClient" class="link" type="button">Cambiar Client ID</button></p>
+  </section>
+
+  <!-- 3. La cabina -->
+  <section id="vApp" class="hidden">
+    <div class="card now">
+      <div class="npTop">
+        <img id="npArt" class="art" alt="">
+        <div class="npInfo">
+          <div id="npTitle" class="title">Nada sonando</div>
+          <div id="npArtist" class="muted"></div>
+          <div id="npDevice" class="muted small"></div>
+        </div>
+      </div>
+      <div class="bar"><div id="npBar"></div></div>
+      <div class="times"><span id="npPos">0:00</span><span id="npStatus" class="badge hidden"></span><span id="npDur">0:00</span></div>
+      <div class="controls">
+        <button id="bPrev" type="button" aria-label="Anterior">⏮</button>
+        <button id="bPlay" type="button" class="primary round" aria-label="Play o pausa">▶</button>
+        <button id="bNext" type="button" aria-label="Siguiente">⏭</button>
+      </div>
+      <label class="row">🔊 <input id="vol" type="range" min="0" max="100" value="70"><span id="volTxt" class="num">70</span></label>
+      <div class="row">
+        <select id="devices" aria-label="Bocina"></select>
+        <button id="bDevRefresh" type="button" class="ghost" aria-label="Actualizar bocinas">↻</button>
+      </div>
+      <div id="devNote" class="muted small"></div>
+    </div>
+
+    <div class="card">
+      <h2>Auto-DJ</h2>
+      <label class="check"><input type="checkbox" id="autoFade" checked> Fade entre canciones</label>
+      <label class="row">Duración del fade <input id="fadeSec" type="range" min="2" max="15" value="6"><span id="fadeTxt" class="num">6 s</span></label>
+      <label class="row">Máximo por canción
+        <select id="maxLen">
+          <option value="0">Completa</option>
+          <option value="60">1:00</option>
+          <option value="90">1:30</option>
+          <option value="120">2:00</option>
+          <option value="150">2:30</option>
+        </select>
+      </label>
+      <label class="row">Saltar intro
+        <select id="skipIntro">
+          <option value="0">No</option>
+          <option value="10">10 s</option>
+          <option value="20">20 s</option>
+          <option value="30">30 s</option>
+        </select>
+      </label>
+      <p class="muted small">El fade baja el volumen, pasa a la siguiente y lo vuelve a subir. Spotify no deja encimar dos canciones.</p>
+    </div>
+
+    <div class="card">
+      <h2>Buscar</h2>
+      <form id="fSearch" class="inline">
+        <input id="q" type="search" placeholder="Canción o artista" autocomplete="off">
+        <button class="primary">Buscar</button>
+      </form>
+      <ul id="results" class="list"></ul>
+    </div>
+
+    <div class="card">
+      <h2>Sigue en la cola</h2>
+      <ul id="queue" class="list"><li class="muted small">Sin datos todavía.</li></ul>
+    </div>
+
+    <div id="secret" class="card secret hidden">
+      <h2>😈 Panel secreto</h2>
+      <p class="muted small">Se abre y se cierra tocando 5 veces el logo.</p>
+      <label class="row">Modo
+        <select id="mode">
+          <option value="normal">Normal</option>
+          <option value="prender">Prender la fiesta</option>
+          <option value="correr">Correr a los invitados</option>
+        </select>
+      </label>
+      <label class="row">Canciones por nivel
+        <select id="perLevel">
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+      </label>
+      <div id="modeInfo" class="muted small"></div>
+
+      <h3>Comodines</h3>
+      <p class="muted small">Agrégalos desde Buscar con el botón 😈. En la votación arreglada siempre gana un comodín.</p>
+      <ul id="wild" class="list"></ul>
+      <button id="bVote" type="button" class="primary">Abrir votación arreglada</button>
+      <p><button id="bLogout" type="button" class="link">Cerrar sesión de Spotify</button></p>
+    </div>
+  </section>
+</main>
+
+<!-- Pantalla para invitados -->
+<div id="guest" class="guest hidden">
+  <img id="gArt" class="gArt" alt="">
+  <div id="gTitle" class="gTitle"></div>
+  <div id="gArtist" class="gArtist"></div>
+  <div class="bar gBar"><div id="gBar"></div></div>
+  <div id="gVote" class="gVote hidden">
+    <div class="gQ">¿Cuál sigue? <span id="gTimer"></span></div>
+    <div class="gOpts">
+      <button id="gA" type="button" class="gOpt"><img alt=""><span class="n"></span><span class="c">0</span></button>
+      <button id="gB" type="button" class="gOpt"><img alt=""><span class="n"></span><span class="c">0</span></button>
+    </div>
+    <div id="gResult" class="gResult"></div>
+  </div>
+  <button id="gExit" type="button" class="gExit" aria-label="Salir (3 toques)"></button>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>
